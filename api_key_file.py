@@ -2,7 +2,7 @@ import os
 
 class ApiKeyFile:
     def __init__(self):
-        self.filename = os.path.expanduser("~/.chatGPT/openai")
+        self.filename = os.path.expanduser("~/.tgpt/api")
         self.api_key = None
         
     def get_api_key(self):
