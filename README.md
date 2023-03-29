@@ -46,4 +46,4 @@ The TerminalGPT project is made up of the following classes:
 
 ### License
 
-This project is licensed under the GPL 3 License.
+GNU General Public License v3.0
