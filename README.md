@@ -1,7 +1,7 @@
 # TerminalGPT
 
 TerminalGPT is an interactive command-line interface that uses OpenAI's GPT-3 language model to answer questions and engage in conversations with users. It is designed for Linux environments.
-And since you're bound to wonder, yes, ChatGPT wrote a lot of this code :)
+And since you're bound to wonder, yes, ChatGPT wrote a lot of the code :)
 
 ### Features
 - Ability to ask and receive answers to a wide range of questions
