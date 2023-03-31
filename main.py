@@ -16,7 +16,7 @@ def main():
     api_key = api_key_file.get_api_key()
 
     # Create client and command line interface objects
-    client = ChatGPTClient(api_key)
+    client = ChatGPTClient(api_key, "gpt-3.5-turbo", "https://api.openai.com/v1/chat/completions")
     cli = CommandLineInterface(client)
 
     if args.question:
