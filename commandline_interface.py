@@ -7,8 +7,8 @@ class CommandLineInterface:
 
     def run(self):
         """Starts the command line interface in chat mode."""
-        print("Welcome to ChatGPT!")
-        print("Type 'exit' to end the session.")
+        print("Welcome to TerminalGPT!")
+        print("Type '/exit or /quit' to end the session.")
 
         while True:
             user_input = input("\nYou: ")
