@@ -17,48 +17,48 @@ class ChatGPTClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"}
         
-        def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
-            """
-            Send a prompt to the GPT-3 API to generate a completion.
+    def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
+        """
+        Send a prompt to the GPT-3 API to generate a completion.
 
-            Args:
-                prompt (str): The prompt to send to the API.
-                chat_log (Optional[str]): The previous conversation history in the chat format. 
-                                        Use only for chat mode.
-                stop (Optional[str or List[str]]): Up to 4 sequences where the API will stop generating further tokens.
-                max_tokens (int): The maximum number of tokens to generate in the completion.
-                temperature (float): What sampling temperature to use, between 0 and 1.
-                top_p (float): An alternative to sampling with temperature, where the model 
-                            considers the results of the tokens with top_p probability mass.
+        Args:
+            prompt (str): The prompt to send to the API.
+            chat_log (Optional[str]): The previous conversation history in the chat format. 
+                                    Use only for chat mode.
+            stop (Optional[str or List[str]]): Up to 4 sequences where the API will stop generating further tokens.
+            max_tokens (int): The maximum number of tokens to generate in the completion.
+            temperature (float): What sampling temperature to use, between 0 and 1.
+            top_p (float): An alternative to sampling with temperature, where the model 
+                        considers the results of the tokens with top_p probability mass.
 
-            Returns:
-                The response from the API, containing the generated text.
-            """
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {self.api_key}'
-            }
+        Returns:
+            The response from the API, containing the generated text.
+        """
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.api_key}'
+        }
 
-            payload = {
-                'model': 'gpt-3.5-turbo',
-                'prompt': prompt,
-                'temperature': temperature,
-                'max_tokens': max_tokens,
-                'top_p': top_p
-            }
+        payload = {
+            'model': 'gpt-3.5-turbo',
+            'prompt': prompt,
+            'temperature': temperature,
+            'max_tokens': max_tokens,
+            'top_p': top_p
+        }
 
-            if stop is not None:
-                payload['stop'] = stop
+        if stop is not None:
+            payload['stop'] = stop
 
-            if chat_log is not None:
-                payload['messages'] = chat_log
+        if chat_log is not None:
+            payload['messages'] = chat_log
 
-            url = 'https://api.openai.com/v1/chat/completions'
-            response = requests.post(url, headers=headers, json=payload)
-            response.raise_for_status()
+        url = 'https://api.openai.com/v1/chat/completions'
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
 
-            data = response.json()['choices'][0]['text']
-            return data.strip()
+        data = response.json()['choices'][0]['text']
+        return data.strip()
 
         
     def completions(self, prompt, max_tokens=100, temperature=0.5, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
@@ -95,12 +95,20 @@ class ChatGPTClient:
         }
 
         if self.chat_history:
-            payload["messages"] = self.chat_history
+            history = self.chat_history
+            history.append({"role": "user", "content": prompt})
+            payload["messages"] = history
         else:
             payload["messages"] = [{"role": "user", "content": prompt}]
         
+        
         response = requests.post(self.endpoint, headers=self.headers, json=payload)
+
+        print(payload)
+        print(response.content.decode())
+
         response.raise_for_status()
+
         result = response.json()
         choices = result["choices"]
         text = choices[0]["message"]["content"].strip()
