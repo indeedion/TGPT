@@ -66,7 +66,6 @@ class ChatGPTClient:
                 "Authorization": f"Bearer {self.api_key}"}
         data = {
             "model": self.model,
-            "prompt": prompt,
             "temperature": temperature,
             "max_tokens": max_tokens,
             "top_p": top_p,
@@ -75,13 +74,18 @@ class ChatGPTClient:
             "frequency_penalty": frequency_penalty,
             "stop": stop
         }
+
+        messages = [{"role": "user", "content": prompt}]
+        data["messages"] = messages
+
         url = "https://api.openai.com/v1/chat/completions"
         response = requests.post(url, headers=headers, json=data)
         if response.status_code != 200:
+            print(response.content.decode())
             raise ValueError("Failed to generate completions")
         response = response.json()
         choices = response["choices"]
-        return [choice["text"].strip() for choice in choices]
+        return choices[0]["message"]["content"].strip()
 
     def generate_text(self, prompt, max_tokens=200, temperature=0.5, top_p=1, frequency_penalty=0, presence_penalty=0):
         payload = {
@@ -104,8 +108,8 @@ class ChatGPTClient:
         
         response = requests.post(self.endpoint, headers=self.headers, json=payload)
 
-        print(payload)
-        print(response.content.decode())
+        #print(payload)
+        #print(response.content.decode())
 
         response.raise_for_status()
 
