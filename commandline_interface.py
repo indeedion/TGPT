@@ -2,11 +2,25 @@ import sys
 from api_key_file import ApiKeyFile
 
 class CommandLineInterface:
+    """
+    This class provides a command line interface for interacting with a GPT-3 model.
+    
+    Attributes:
+        client (obj): The GPT-3 API client instance.
+    """
+
     def __init__(self, client):
+        """
+        Initializes the CommandLineInterface instance with the provided GPT-3 API client.
+        
+        :param client: The GPT-3 API client instance.
+        """
         self.client = client
 
     def run(self):
-        """Starts the command line interface in chat mode."""
+        """
+        Starts the command line interface in chat mode.
+        """
         print("Welcome to TerminalGPT!")
         print("Type '/exit or /quit' to end the session.")
 
@@ -22,6 +36,11 @@ class CommandLineInterface:
                 self.print_response(response)
 
     def print_response(self, response_text):
+        """
+        Prints the GPT-3 model response.
+        
+        :param response_text: The response text from the GPT-3 model.
+        """
         print(f"\ngpt: {response_text}")
 
     def handle_completion(self, prompt):
@@ -40,6 +59,12 @@ class CommandLineInterface:
         return completion
 
     def handle_command(self, command):
+        """
+        Processes user commands and returns a boolean indicating whether to continue the chat session.
+        
+        :param command: The user's command.
+        :return: True if the chat session should continue, False otherwise.
+        """
         if command == "/exit" or command == "/quit":
             return self._exit()
         elif command == "/help":
@@ -50,10 +75,16 @@ class CommandLineInterface:
             return self._print_help()
 
     def _exit(self):
+        """
+        Exits the program and prints a goodbye message.
+        """
         print("Goodbye!")
         sys.exit()
 
     def _print_help(self):
+        """
+        Prints the help message with the list of available commands.
+        """
         print("Available commands:")
         print("/exit or /quit: Exit the program")
         print("/help: Show this help message")

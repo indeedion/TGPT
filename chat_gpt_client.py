@@ -8,7 +8,25 @@ from openai import OpenAIError
 #from openai import OpenAIAPIException
 
 class ChatGPTClient:
+    """
+    This class provides a client to interact with the GPT-3 API.
+    
+    Attributes:
+        api_key (str): The API key for the GPT-3 API.
+        model (str): The GPT-3 model to use for generating text.
+        endpoint (str): The API endpoint for completions.
+        chat_history (list): A list of chat history messages.
+        headers (dict): Headers for API requests.
+    """
+
     def __init__(self, api_key, model="gpt-3.5-turbo", endpoint="https://api.openai.com/v1/chat/completions"):
+        """
+        Initializes the ChatGPTClient instance with the provided API key, model, and endpoint.
+        
+        :param api_key: The GPT-3 API key.
+        :param model: The GPT-3 model to use for generating text (default: "gpt-3.5-turbo").
+        :param endpoint: The API endpoint for completions (default: "https://api.openai.com/v1/chat/completions").
+        """
         self.api_key = api_key
         self.endpoint = endpoint
         self.model = model
@@ -19,20 +37,15 @@ class ChatGPTClient:
         
     def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
         """
-        Send a prompt to the GPT-3 API to generate a completion.
-
-        Args:
-            prompt (str): The prompt to send to the API.
-            chat_log (Optional[str]): The previous conversation history in the chat format. 
-                                    Use only for chat mode.
-            stop (Optional[str or List[str]]): Up to 4 sequences where the API will stop generating further tokens.
-            max_tokens (int): The maximum number of tokens to generate in the completion.
-            temperature (float): What sampling temperature to use, between 0 and 1.
-            top_p (float): An alternative to sampling with temperature, where the model 
-                        considers the results of the tokens with top_p probability mass.
-
-        Returns:
-            The response from the API, containing the generated text.
+        Sends a prompt to the GPT-3 API to generate a completion.
+        
+        :param prompt: The prompt to send to the API.
+        :param chat_log: Optional; the previous conversation history in the chat format.
+        :param stop: Optional; up to 4 sequences where the API will stop generating further tokens.
+        :param max_tokens: The maximum number of tokens to generate in the completion (default: 100).
+        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
+        :param top_p: An alternative to sampling with temperature (default: 1).
+        :return: The response from the API, containing the generated text.
         """
         headers = {
             'Content-Type': 'application/json',
@@ -62,6 +75,19 @@ class ChatGPTClient:
 
         
     def completions(self, prompt, max_tokens=100, temperature=0.5, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
+        """
+        Generates completions based on the given prompt.
+        
+        :param prompt: The user's prompt.
+        :param max_tokens: The maximum number of tokens to generate in the completion (default: 100).
+        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
+        :param top_p: An alternative to sampling with temperature (default: 1).
+        :param presence_penalty: Controls how much the model should consider token presence (default: 0).
+        :param frequency_penalty: Controls how much the model should consider token frequency (default: 0).
+        :param stop: Optional; up to 4 sequences where the API will stop generating further tokens.
+        :param n: The number of completions to generate for each prompt (default: 1).
+        :return: The generated text from the completion.
+        """
         headers = {"Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}"}
         data = {
@@ -88,6 +114,17 @@ class ChatGPTClient:
         return choices[0]["message"]["content"].strip()
 
     def generate_text(self, prompt, max_tokens=200, temperature=0.5, top_p=1, frequency_penalty=0, presence_penalty=0):
+        """
+        Generates text based on the given prompt.
+        
+        :param prompt: The user's prompt.
+        :param max_tokens: The maximum number of tokens to generate in the completion (default: 200).
+        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
+        :param top_p: An alternative to sampling with temperature (default: 1).
+        :param frequency_penalty: Controls how much the model should consider token frequency (default: 0).
+        :param presence_penalty: Controls how much the model should consider token presence (default: 0).
+        :return: The generated text from the completion.
+        """
         payload = {
             "model": self.model,
             "messages": [],
@@ -119,26 +156,24 @@ class ChatGPTClient:
         self.add_to_chat_history(prompt, text)
         return text
 
-    def set_api_key(self, api_key):
-        self.api_key = api_key
-
-    def set_model(self, model):
-        self.model = model
-
-    def list_models(self):
-        url = "https://api.openai.com/v1/models"
-        headers = {"Authorization": f"Bearer {self.api_key}"}
-        response = requests.get(url, headers=headers)
-        return [model["id"] for model in response.json()["data"]]
-
     def add_to_chat_history(self, prompt, response):
-        """Adds a prompt and response message to the chat history."""
+        """
+        Adds a prompt and response message to the chat history.
+        
+        :param prompt: The user's prompt.
+        :param response: The generated response from the model.
+        """
         prompt_message = {'role': 'user', 'content': prompt}
         response_message = {'role': 'assistant', 'content': response}
         self.chat_history.append(prompt_message)
         self.chat_history.append(response_message)
 
     def get_chat_history(self):
+        """
+        Retrieves the current chat history.
+        
+        :return: A list of dictionaries containing chat history messages.
+        """
         return self.chat_history
  
 if __name__ == "__main__":
