@@ -3,7 +3,14 @@ import requests
 import json
 import uuid
 import time
+import io
+import base64
+import tempfile
+import os
+import datetime
+from typing import Union
 from api_key_file import ApiKeyFile
+from image_handler import ImageHandler
 from openai import OpenAIError
 #from openai import OpenAIAPIException
 
@@ -34,6 +41,7 @@ class ChatGPTClient:
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"}
+        self.image_handler = ImageHandler(api_key)
         
     def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
         """
@@ -175,6 +183,59 @@ class ChatGPTClient:
         :return: A list of dictionaries containing chat history messages.
         """
         return self.chat_history
+
+    def generate_image(self, prompt, size="256x256", n=1, response_format="url"):
+        """
+        Generates an image based on the specified text prompt.
+
+        :param prompt: The text prompt to generate the image from.
+        :param size: The size of the generated image. Can be one of "256x256", "512x512", or "1024x1024".
+        :param n: The number of images to generate.
+        :param response_format: The format of the response. Can be one of "url" or "base64".
+        :return: The generated image(s), either as a URL or base64-encoded data.
+        """
+        return self.image_handler.generate_image(prompt, size, n, response_format)
+
+    def generate_variation(self, image_path: str, n: int = 1, size: str = "512x512", response_format: str = "url") -> Union[str, bytes]:
+        """
+        Generates a variation of a given image.
+        
+        :param image_path: The file path to the input image.
+        :param n: The number of images to generate (default 1).
+        :param size: The size of the generated image in pixels (default "512x512").
+        :param response_format: The format in which to return the generated image, either "url" or "base64" (default "url").
+        :return: The URL or Base64-encoded string of the generated image, depending on the value of response_format.
+        """
+
+        return self.image_handler.generate_variation(image_path, n=n, size=size, response_format=response_format)
+
+    def save_image(self, image_url, file_path):
+        """
+        Saves the image from the provided URL to a local file.
+
+        :param image_url: The URL of the image to save.
+        :param file_path: The local file path to save the image to.
+        """
+        response = requests.get(image_url)
+        with open(file_path, "wb") as f:
+            f.write(response.content)
+
+    def get_image_data(self, image_url: str) -> bytes:
+        # Download the image from the URL and save it to a file
+        now = datetime.datetime.now()
+        date_str = now.strftime("%Y-%m-%d-%H:%M:%S")
+        image_name = f"gpt-gen-{date_str}.png"
+        pictures_dir = os.path.expanduser("~/Pictures/TerminalGPT")
+        if not os.path.exists(pictures_dir):
+            os.makedirs(pictures_dir)
+        response = requests.get(image_url)
+        image_file = os.path.join(f"{pictures_dir}/{image_name}")
+        with open(image_file, "wb") as f:
+            f.write(response.content)
+            print(f"Image saved to file {pictures_dir}/{image_name}")
+        # Open the file and return its contents
+        with open(image_file, "rb") as f:
+            return f.read()
  
 if __name__ == "__main__":
     api_key_file = ApiKeyFile()
@@ -183,3 +244,4 @@ if __name__ == "__main__":
     print(client.get_engine())
     # Use client methods here
 
+#/home/indeedion/Pictures/TerminalGPT

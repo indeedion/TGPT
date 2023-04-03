@@ -1,5 +1,8 @@
 import sys
+import os
+import requests
 from api_key_file import ApiKeyFile
+from datetime import datetime
 
 class CommandLineInterface:
     """
@@ -70,9 +73,114 @@ class CommandLineInterface:
         elif command == "/help":
             self._print_help()
             return True
+        elif command.startswith("/generate_image"):
+            command_parts = command.split(" ")
+            if len(command_parts) < 2:
+                print("Invalid command, please specify a prompt.")
+                return True
+            prompt = " ".join(command_parts[1:])
+            image_data = self.client.generate_image(prompt)
+            if image_data:
+                self.save_image(image_data, "generated_image.png")
+                print("Image generated and saved to generated_image.png")
+            else:
+                print("Failed to generate image.")
+            return True
+        elif command.startswith("/generate_edit"):
+            command_parts = command.split(" ")
+            if len(command_parts) < 4:
+                print("Invalid command, please specify an image path, mask path, and prompt.")
+                return True
+            image_path = command_parts[1]
+            mask_path = command_parts[2]
+            prompt = " ".join(command_parts[3:])
+            image_data = self.client.generate_edit(image_path, mask_path, prompt)
+            if image_data:
+                self.save_image(image_data, "edited_image.png")
+                print("Image edited and saved to edited_image.png")
+            else:
+                print("Failed to edit image.")
+            return True
+        elif command.startswith("/generate_variation"):
+            command_parts = command.split(" ")
+            if len(command_parts) < 2:
+                print("Invalid command, please specify an image path.")
+                return True
+            image_path = command_parts[1]
+            image_data = self.client.generate_variation(image_path)
+            if image_data:
+                self.save_image(image_data, "generated_variation.png")
+                print("Image variation generated and saved to generated_variation.png")
+            else:
+                print("Failed to generate image variation.")
+            return True
+        elif command.startswith("/save_image"):
+            command_parts = command.split(" ")
+            if len(command_parts) < 3:
+                print("Invalid command, please specify an image URL and file path.")
+                return True
+            url = command_parts[1]
+            path = command_parts[2]
+            self.client.save_image(url, path)
+            print(f"Image saved to {path}")
+            return True
         else:
             print("Invalid command, please use one of the following:")
             return self._print_help()
+
+    def generate_image(self, prompt, n=1, size="512x512", response_format="url"):
+        """
+        Generates an image based on the provided text prompt and returns the image data.
+
+        :param prompt: The text prompt to generate the image from.
+        :param n: The number of images to generate (default 1).
+        :param size: The size of the generated image (default "512x512").
+        :param response_format: The format of the image data to return (default "url").
+        :return: The image data in the specified format.
+        """
+        response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
+        image_data = self.client.get_image_data(response[0]['url'])
+        return image_data
+
+    def generate_variation(self, image_path, size="512x512", n=1, response_format="url"):
+        """
+        Generates a variation of an existing image given an image file path, size, and number of images to generate.
+
+        :param image_path: The path to the image file.
+        :param size: The size of the generated image (default "512x512").
+        :param n: The number of images to generate (default 1).
+        :param response_format: The format of the image data to return (default "url").
+        :return: The image data in the specified format.
+        """
+
+        response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
+        
+        now = datetime.now()
+        timestamp = now.strftime("%Y:%m:%d-%H:%M:%S")
+
+        if isinstance(response, list):
+            image_url = response[0]['url']
+        elif isinstance(response, dict):
+            image_url = response['data'][0]['url']
+        else:
+            raise ValueError("Unexpected response format")
+
+        # Get edited image data from URL
+        self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{timestamp}.png"))
+
+        return True
+
+    def save_image(self, url: str, path: str) -> None:
+        """
+        Downloads an image from the specified URL and saves it to the specified path.
+        
+        :param url: The URL of the image to download.
+        :param path: The path to save the downloaded image to.
+        """
+        response = requests.get(url)
+        with open(path, "wb") as f:
+            f.write(response.content)
+            print(f"Image saved to {path}")
 
     def _exit(self):
         """
