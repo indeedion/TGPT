@@ -1,8 +1,7 @@
 import sys
 import os
-import requests
 import urllib.request
-from api_key_file import ApiKeyFile
+from gpt_client import GPTClient
 from datetime import datetime
 
 class CommandLineInterface:
@@ -47,7 +46,7 @@ class CommandLineInterface:
         """
         print(f"\ngpt: {response_text}")
 
-    def handle_completion(self, prompt, n=1, t=0.7, m=1024):
+    def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
         """
         Handle a single GPT-3 completion request.
 
@@ -58,7 +57,7 @@ class CommandLineInterface:
             return ""
 
         # Generate chat completion
-        response = self.client.completions(prompt, n=n, t=t, m=m, stop=None)
+        response = self.client.completions(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
         for i, completion in enumerate(response):
             print(f"\nAnswer {i+1}:")
             print(f"\n{completion}")
@@ -78,57 +77,6 @@ class CommandLineInterface:
         elif command == "/help":
             self._print_help()
             return True
-        elif command.startswith("/generate_image"):
-            command_parts = command.split(" ")
-            if len(command_parts) < 2:
-                print("Invalid command, please specify a prompt.")
-                return True
-            prompt = " ".join(command_parts[1:])
-            image_data = self.client.generate_image(prompt)
-            if image_data:
-                self.save_image(image_data, "generated_image.png")
-                print("Image generated and saved to generated_image.png")
-            else:
-                print("Failed to generate image.")
-            return True
-        elif command.startswith("/generate_edit"):
-            command_parts = command.split(" ")
-            if len(command_parts) < 4:
-                print("Invalid command, please specify an image path, mask path, and prompt.")
-                return True
-            image_path = command_parts[1]
-            mask_path = command_parts[2]
-            prompt = " ".join(command_parts[3:])
-            image_data = self.client.generate_edit(image_path, mask_path, prompt)
-            if image_data:
-                self.save_image(image_data, "edited_image.png")
-                print("Image edited and saved to edited_image.png")
-            else:
-                print("Failed to edit image.")
-            return True
-        elif command.startswith("/generate_variation"):
-            command_parts = command.split(" ")
-            if len(command_parts) < 2:
-                print("Invalid command, please specify an image path.")
-                return True
-            image_path = command_parts[1]
-            image_data = self.client.generate_variation(image_path)
-            if image_data:
-                self.save_image(image_data, "generated_variation.png")
-                print("Image variation generated and saved to generated_variation.png")
-            else:
-                print("Failed to generate image variation.")
-            return True
-        elif command.startswith("/save_image"):
-            command_parts = command.split(" ")
-            if len(command_parts) < 3:
-                print("Invalid command, please specify an image URL and file path.")
-                return True
-            url = command_parts[1]
-            path = command_parts[2]
-            self.client.save_image(url, path)
-            print(f"Image saved to {path}")
-            return True
         elif command == "/temperature":
             temp = float(input("New temperature: "))
             self.client.temperature = temp
@@ -143,7 +91,7 @@ class CommandLineInterface:
             print("Invalid command, please use one of the following:")
             return self._print_help()
 
-    def generate_image(self, prompt, n=1, size="512x512", response_format="url"):
+    def generate_image(self, prompt, n=1, size="medium", response_format="url"):
         """
         Generates an image based on the provided text prompt and returns the image data.
 
@@ -161,10 +109,9 @@ class CommandLineInterface:
         for i, image_url in enumerate(response):
             self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-generate-{i}-{timestamp}.png"))
 
-        #image_data = self.client.get_image_data(response[0]['url'])
         return True
 
-    def generate_variation(self, image_path, size="512x512", n=1, response_format="url"):
+    def generate_variation(self, image_path, size="medium", n=1, response_format="url"):
         """
         Generates a variation of an existing image given an image file path, size, and number of images to generate.
 
@@ -184,7 +131,7 @@ class CommandLineInterface:
             self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{i}-{timestamp}.png"))
 
         return True
-
+    
 
     def save_image(self, url, file_path, timeout=30):
         with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
@@ -207,6 +154,12 @@ class CommandLineInterface:
         print("/temperature: set new temperature")
         print("/max-tokens: set new max tokens")
         print("/help: Show this help message")
+
+if __name__ == "__main__":
+    client = GPTClient(api_key="API_KEY")
+    cli = CommandLineInterface(client)
+    cli.run() # Enters chat mode
+
         
 
     

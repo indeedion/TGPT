@@ -22,8 +22,10 @@ class ImageHandler:
         self.headers = {
             "Authorization": f"Bearer {self.api_key}"
         }
+        self.image_sizes = {"small": "256x256", "medium": "512x512", "large": "1024x1024"}
+
         
-    def generate_image(self, prompt, size="512x512", n=1, response_format="url"):
+    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
         """
         Generates an image based on the provided prompt using the OpenAI Images API.
         
@@ -38,7 +40,7 @@ class ImageHandler:
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
-            "size": size,
+            "size": self.image_sizes[size],
             "n": n,
             "response_format": response_format,
         }
@@ -47,7 +49,7 @@ class ImageHandler:
         response.raise_for_status()
         return response.json()["data"]
 
-    def generate_variation(self, image_path, n=1, size="512x512", response_format="url"):
+    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
         """
         Generates a variation of an existing image.
 
@@ -64,7 +66,7 @@ class ImageHandler:
         # Build the request data
         data = {
             "n": n,
-            "size": size,
+            "size": self.image_sizes[size],
             "response_format": response_format,        
         }
         files = {"image": image_file}
@@ -77,5 +79,10 @@ class ImageHandler:
         # Parse the response and return the image URLs or base64-encoded data
         return response.json()["data"]
         
+if __name__ == "__main__":
+    # example usage
+    handler = ImageHandler(api_key="API_KEY")
+    image = handler.generate_image("PROMPT", size="medium")
+    
 
 

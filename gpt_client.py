@@ -1,20 +1,9 @@
-import openai
 import requests
-import json
-import uuid
-import time
-import io
-import base64
-import tempfile
-import os
-import datetime
 from typing import Union
-from api_key_file import ApiKeyFile
 from image_handler import ImageHandler
-from openai import OpenAIError
-#from openai import OpenAIAPIException
 
-class ChatGPTClient:
+
+class GPTClient:
     """
     This class provides a client to interact with the GPT-3 API.
     
@@ -26,7 +15,7 @@ class ChatGPTClient:
         headers (dict): Headers for API requests.
     """
 
-    def __init__(self, api_key, model="gpt-3.5-turbo", endpoint="https://api.openai.com/v1/chat/completions"):
+    def __init__(self, api_key, model="gpt-3.5-turbo"):
         """
         Initializes the ChatGPTClient instance with the provided API key, model, and endpoint.
         
@@ -35,13 +24,13 @@ class ChatGPTClient:
         :param endpoint: The API endpoint for completions (default: "https://api.openai.com/v1/chat/completions").
         """
         self.api_key = api_key
-        self.endpoint = endpoint
+        self.endpoint_completions = "https://api.openai.com/v1/chat/completions"
         self.model = model
         self.chat_history = []
         self.headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"}
-        self.image_handler = ImageHandler(api_key)
+        self.image_handler = ImageHandler(self.api_key)
         self.temperature = 0.5
         self.max_tokens = 100
         
@@ -76,7 +65,7 @@ class ChatGPTClient:
         if chat_log is not None:
             payload['messages'] = chat_log
 
-        url = 'https://api.openai.com/v1/chat/completions'
+        url = self.endpoint_completions
         response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
 
@@ -84,7 +73,7 @@ class ChatGPTClient:
         return data.strip()
 
         
-    def completions(self, prompt, m=100, t=0.5, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
+    def completions(self, prompt, max_tokens=100, temperature=0.7, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
         """
         Generates completions based on the given prompt.
         
@@ -102,8 +91,8 @@ class ChatGPTClient:
                 "Authorization": f"Bearer {self.api_key}"}
         data = {
             "model": self.model,
-            "temperature": t,
-            "max_tokens": m,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
             "top_p": top_p,
             "n": n,
             "presence_penalty": presence_penalty,
@@ -114,7 +103,7 @@ class ChatGPTClient:
         messages = [{"role": "user", "content": prompt}]
         data["messages"] = messages
 
-        url = "https://api.openai.com/v1/chat/completions"
+        url = self.endpoint_completions
         response = requests.post(url, headers=headers, json=data)
         if response.status_code != 200:
             print(response.content.decode())
@@ -127,7 +116,7 @@ class ChatGPTClient:
             results.append(completions[i]["message"]["content"])
         return results
 
-    def generate_text(self, prompt, max_tokens=200, temperature=0.5, top_p=1, frequency_penalty=0, presence_penalty=0):
+    def generate_text(self, prompt, top_p=1, frequency_penalty=0, presence_penalty=0):
         """
         Generates text based on the given prompt.
         
@@ -156,12 +145,7 @@ class ChatGPTClient:
         else:
             payload["messages"] = [{"role": "user", "content": prompt}]
         
-        
-        response = requests.post(self.endpoint, headers=self.headers, json=payload)
-
-        #print(payload)
-        #print(response.content.decode())
-
+        response = requests.post(self.endpoint_completions, headers=self.headers, json=payload)
         response.raise_for_status()
 
         result = response.json()
@@ -190,7 +174,7 @@ class ChatGPTClient:
         """
         return self.chat_history
 
-    def generate_image(self, prompt, size="256x256", n=1, response_format="url"):
+    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
         """
         Generates an image based on the specified text prompt.
 
@@ -200,9 +184,9 @@ class ChatGPTClient:
         :param response_format: The format of the response. Can be one of "url" or "base64".
         :return: The generated image(s), either as a URL or base64-encoded data.
         """
-        return self.image_handler.generate_image(prompt, size, n, response_format)
+        return self.image_handler.generate_image(prompt, n=n, response_format=response_format, size=size)
 
-    def generate_variation(self, image_path: str, n: int = 1, size: str = "512x512", response_format: str = "url") -> Union[str, bytes]:
+    def generate_variation(self, image_path: str, n: int = 1, size = "medium", response_format: str = "url") -> Union[str, bytes]:
         """
         Generates a variation of a given image.
         
@@ -214,40 +198,10 @@ class ChatGPTClient:
         """
 
         return self.image_handler.generate_variation(image_path, n=n, size=size, response_format=response_format)
-
-    def save_image(self, image_url, file_path):
-        """
-        Saves the image from the provided URL to a local file.
-
-        :param image_url: The URL of the image to save.
-        :param file_path: The local file path to save the image to.
-        """
-        response = requests.get(image_url)
-        with open(file_path, "wb") as f:
-            f.write(response.content)
-
-    def get_image_data(self, image_url: str) -> bytes:
-        # Download the image from the URL and save it to a file
-        now = datetime.datetime.now()
-        date_str = now.strftime("%Y-%m-%d-%H:%M:%S")
-        image_name = f"gpt-gen-{date_str}.png"
-        pictures_dir = os.path.expanduser("~/Pictures/TerminalGPT")
-        if not os.path.exists(pictures_dir):
-            os.makedirs(pictures_dir)
-        response = requests.get(image_url)
-        image_file = os.path.join(f"{pictures_dir}/{image_name}")
-        with open(image_file, "wb") as f:
-            f.write(response.content)
-            print(f"Image saved to file {pictures_dir}/{image_name}")
-        # Open the file and return its contents
-        with open(image_file, "rb") as f:
-            return f.read()
  
 if __name__ == "__main__":
-    api_key_file = ApiKeyFile()
-    api_key = api_key_file.get_api_key()
-    client = ChatGPTClient(api_key)
-    print(client.get_engine())
-    # Use client methods here
-
-#/home/indeedion/Pictures/TerminalGPT
+    # example usage
+    client = GPTClient(api_key="API_KEY") #You get this from openai webapp
+    response = client.completions("Hello, how are you?", m=100) # the m means max-tokens, and decides how long the answer can be
+    print(response.choices[0].text)
+    
