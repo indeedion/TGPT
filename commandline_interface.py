@@ -1,6 +1,7 @@
 import sys
 import os
 import requests
+import urllib.request
 from api_key_file import ApiKeyFile
 from datetime import datetime
 
@@ -46,7 +47,7 @@ class CommandLineInterface:
         """
         print(f"\ngpt: {response_text}")
 
-    def handle_completion(self, prompt):
+    def handle_completion(self, prompt, n=1):
         """
         Handle a single GPT-3 completion request.
 
@@ -57,9 +58,13 @@ class CommandLineInterface:
             return ""
 
         # Generate chat completion
-        completion = self.client.completions(prompt, max_tokens=1024, n=1, stop=None)
+        response = self.client.completions(prompt, max_tokens=1024, n=n, stop=None)
+        for i, completion in enumerate(response):
+            print(f"\nAnswer {i+1}:")
+            print(f"\n{completion}")
+        print("\n")
 
-        return completion
+        return True
 
     def handle_command(self, command):
         """
@@ -139,8 +144,15 @@ class CommandLineInterface:
         :return: The image data in the specified format.
         """
         response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
-        image_data = self.client.get_image_data(response[0]['url'])
-        return image_data
+
+        now = datetime.now()
+        timestamp = now.strftime("%Y:%m:%d-%H:%M:%S")
+
+        for i, image_url in enumerate(response):
+            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-generate-{i}-{timestamp}.png"))
+
+        #image_data = self.client.get_image_data(response[0]['url'])
+        return True
 
     def generate_variation(self, image_path, size="512x512", n=1, response_format="url"):
         """
@@ -154,33 +166,20 @@ class CommandLineInterface:
         """
 
         response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
-        
+
         now = datetime.now()
         timestamp = now.strftime("%Y:%m:%d-%H:%M:%S")
 
-        if isinstance(response, list):
-            image_url = response[0]['url']
-        elif isinstance(response, dict):
-            image_url = response['data'][0]['url']
-        else:
-            raise ValueError("Unexpected response format")
-
-        # Get edited image data from URL
-        self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{timestamp}.png"))
+        for i, image_url in enumerate(response):
+            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{i}-{timestamp}.png"))
 
         return True
 
-    def save_image(self, url: str, path: str) -> None:
-        """
-        Downloads an image from the specified URL and saves it to the specified path.
-        
-        :param url: The URL of the image to download.
-        :param path: The path to save the downloaded image to.
-        """
-        response = requests.get(url)
-        with open(path, "wb") as f:
-            f.write(response.content)
-            print(f"Image saved to {path}")
+
+    def save_image(self, url, file_path, timeout=30):
+        with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
+            out_file.write(response.read())
+        print(f"Saved image to {file_path}")
 
     def _exit(self):
         """

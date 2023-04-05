@@ -42,6 +42,7 @@ class ImageHandler:
             "n": n,
             "response_format": response_format,
         }
+        
         response = requests.post(self.endpoint, headers=headers, json=data)
         response.raise_for_status()
         return response.json()["data"]
@@ -70,7 +71,7 @@ class ImageHandler:
 
         # Make the API request
         response = requests.post(self.endpoint_variation, data=data, files=files, headers=self.headers)
-        print(response.content.decode())
+        #print(response.content.decode())
         response.raise_for_status()
 
         # Parse the response and return the image URLs or base64-encoded data

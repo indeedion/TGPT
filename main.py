@@ -12,6 +12,7 @@ def main():
     parser.add_argument("-gi", "--generate-image", metavar="PROMPT", help="Generate an image based on the given text prompt")
     #parser.add_argument("-gv", "--generate-variation", help="Generate a variation of an existing image")
     parser.add_argument("-gv", "--generate-variation", metavar="EXISTING_IMAGE_PATH", help="Generate a variation of an existing image. Provide the path to the existing image as an argument.")
+    parser.add_argument("-n", "--number", type=int, default=1, help="The number of images to generate or vary. Default is 1.")
     args = parser.parse_args()
 
     # Load API key from file
@@ -24,9 +25,8 @@ def main():
 
     # Check if a question was provided as an argument
     if args.question:
-        print("inside question")
-        response = cli.handle_completion(args.question)
-        cli.print_response(response)
+        print("Sending query...")
+        response = cli.handle_completion(args.question, n=args.number)
 
     # Check if chat mode was specified
     elif args.chat:
@@ -34,13 +34,14 @@ def main():
 
     # Check if generate image mode was specified
     elif args.generate_image:
-        image_data = cli.generate_image(args.generate_image)
+        print("Generating image...")
+        image_data = cli.generate_image(args.generate_image, n=args.number)
 
     # Check if generate variation mode was specified
     elif args.generate_variation:
-        ("Creating image variation...")
+        print("Creating image variation...")
         image_path = args.generate_variation
-        image_data = cli.generate_variation(image_path)
+        image_data = cli.generate_variation(image_path, n=args.number)
 
     # Print help message if no arguments are provided
     else:
