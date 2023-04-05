@@ -12,7 +12,7 @@ def main():
     parser.add_argument("-gv", "--generate-variation", metavar="EXISTING_IMAGE_PATH", help="Generate a variation of an existing image. Provide the path to the existing image as an argument.")
     parser.add_argument("-n", "--number", type=int, default=1, help="The number of images to generate or vary. Default is 1.")
     parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=0.7, help="The temperature to use for generation (default: 0.5)")
-    parser.add_argument("-m", "--max", type=int, default=100, help="The maximum number of tokens to generate for completions(default: 100)")
+    parser.add_argument("-m", "--max", type=int, default=100, help="The maximum number of tokens to generate for completions(Default: 100)")
     parser.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
     args = parser.parse_args()
 
