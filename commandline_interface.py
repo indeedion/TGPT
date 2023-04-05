@@ -47,7 +47,7 @@ class CommandLineInterface:
         """
         print(f"\ngpt: {response_text}")
 
-    def handle_completion(self, prompt, n=1):
+    def handle_completion(self, prompt, n=1, t=0.7, m=1024):
         """
         Handle a single GPT-3 completion request.
 
@@ -58,7 +58,7 @@ class CommandLineInterface:
             return ""
 
         # Generate chat completion
-        response = self.client.completions(prompt, max_tokens=1024, n=n, stop=None)
+        response = self.client.completions(prompt, n=n, t=t, m=m, stop=None)
         for i, completion in enumerate(response):
             print(f"\nAnswer {i+1}:")
             print(f"\n{completion}")

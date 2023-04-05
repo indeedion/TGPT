@@ -82,7 +82,7 @@ class ChatGPTClient:
         return data.strip()
 
         
-    def completions(self, prompt, max_tokens=100, temperature=0.5, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
+    def completions(self, prompt, m=100, t=0.5, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
         """
         Generates completions based on the given prompt.
         
@@ -100,8 +100,8 @@ class ChatGPTClient:
                 "Authorization": f"Bearer {self.api_key}"}
         data = {
             "model": self.model,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
+            "temperature": t,
+            "max_tokens": m,
             "top_p": top_p,
             "n": n,
             "presence_penalty": presence_penalty,
