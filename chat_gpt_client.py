@@ -42,6 +42,8 @@ class ChatGPTClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"}
         self.image_handler = ImageHandler(api_key)
+        self.temperature = 0.5
+        self.max_tokens = 100
         
     def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
         """
@@ -140,8 +142,8 @@ class ChatGPTClient:
         payload = {
             "model": self.model,
             "messages": [],
-            "max_tokens": max_tokens,
-            "temperature": temperature,
+            "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
             "top_p": top_p,
             "frequency_penalty": frequency_penalty,
             "presence_penalty": presence_penalty

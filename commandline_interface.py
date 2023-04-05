@@ -129,6 +129,16 @@ class CommandLineInterface:
             self.client.save_image(url, path)
             print(f"Image saved to {path}")
             return True
+        elif command == "/temperature":
+            temp = float(input("New temperature: "))
+            self.client.temperature = temp
+            print(f"Temperature set to {temp}")
+            return True
+        elif command == "/max-tokens":
+            tokens = int(input("New max tokens: "))
+            self.client.max_tokens = tokens
+            print(f"Max tokens set to {tokens}")
+            return True
         else:
             print("Invalid command, please use one of the following:")
             return self._print_help()
@@ -194,7 +204,10 @@ class CommandLineInterface:
         """
         print("Available commands:")
         print("/exit or /quit: Exit the program")
+        print("/temperature: set new temperature")
+        print("/max-tokens: set new max tokens")
         print("/help: Show this help message")
+        
 
     
 
