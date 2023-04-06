@@ -10,67 +10,34 @@ from typing import Union
 from datetime import datetime
 
 class ApiKeyFile:
-    """
-    This class handles the API key stored in a file.
-
-    Attributes:
-        filename (str): The file path for the API key file.
-        api_key (str): The API key value.
-    """
     def __init__(self):
-        """
-        Initializes the ApiKeyFile instance, setting the API key file path
-        and initializing the api_key attribute to None.
-        """
         self.filename = os.path.expanduser("~/.tgpt/api")
         self.api_key = None
         
     def get_api_key(self):
-        """
-        Retrieves the API key from the file, if not already cached.
-        
-        Returns:
-            str: The API key.
-        """
         if self.api_key is None:
             with open(self.filename, 'r') as f:
                 self.api_key = f.read().strip()
         return self.api_key
 
-class ImageHandler:
-    """
-    A class for handling image creation, editing, and variations using the OpenAI Images API.
-    """
-    
+class ImageHandler:   
     def __init__(self, api_key):
-        """
-        Initializes the ImageHandler instance with the provided OpenAI API key.
-        
-        :param api_key: The OpenAI API key.
-        """
-        self.model = "gpt-3.5-turbo"
         self.api_key = api_key
-        self.endpoint = "https://api.openai.com/v1/images/generations"
-        self.endpoint_edit = "https://api.openai.com/v1/images/edits"
+        self.endpoint_generation = "https://api.openai.com/v1/images/generations"
         self.endpoint_variation = "https://api.openai.com/v1/images/variations"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}"
         }
         self.image_sizes = {"small": "256x256", "medium": "512x512", "large": "1024x1024"}
 
-        
+    def _send_request(self, endpoint, data, files=None):
+        headers = self.headers.copy()
+        headers["Content-Type"] = "application/json"
+        response = requests.post(endpoint, headers=headers, json=data, files=files)
+        response.raise_for_status()
+        return response.json()["data"]
+
     def generate_image(self, prompt, size="medium", n=1, response_format="url"):
-        """
-        Generates an image based on the provided prompt using the OpenAI Images API.
-        
-        :param prompt: The text prompt for generating the image.
-        :param size: The size of the generated image. Can be "256x256", "512x512", or "1024x1024". Default is "512x512".
-        :param n: The number of images to generate. Default is 1.
-        :param response_format: The format of the response. Can be "url" or "base64". Default is "url".
-        
-        :return: A list of generated image URLs or base64-encoded image data.
-        """
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"}
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
@@ -78,26 +45,26 @@ class ImageHandler:
             "n": n,
             "response_format": response_format,
         }
-        
-        response = requests.post(self.endpoint, headers=headers, json=data)
-        response.raise_for_status()
-        return response.json()["data"]
+        return self._send_request(self.endpoint_generation, data)
 
     def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
-        """
-        Generates a variation of an existing image.
+        with open(image_path, 'rb') as image_file:
+            data = {
+                "n": n,
+                "size": self.image_sizes[size],
+                "response_format": response_format,        
+            }
+            files = {"image": image_file}
+            headers = self.headers.copy()
+            response = requests.post(self.endpoint_variation, headers=headers, data=data, files=files)
+            response.raise_for_status()
+            return response.json()["data"]
 
-        :param image_file: The file object or file path of the image to generate a variation of.
-        :param n: The number of images to generate (default 1).
-        :param size: The size of the generated images (default "512x512").
-        :param response_format: The format of the response (default "url").
-        :return: A list of URLs or base64-encoded image data, depending on the response format.
-        """
+
+    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
         if isinstance(image_path, str):
-            # If image_file is a string, assume it's a file path and open the file
             image_file = open(image_path, 'rb')
 
-        # Build the request data
         data = {
             "n": n,
             "size": self.image_sizes[size],
@@ -105,34 +72,13 @@ class ImageHandler:
         }
         files = {"image": image_file}
 
-        # Make the API request
         response = requests.post(self.endpoint_variation, data=data, files=files, headers=self.headers)
-        #print(response.content.decode())
         response.raise_for_status()
 
-        # Parse the response and return the image URLs or base64-encoded data
         return response.json()["data"]
 
 class GPTClient:
-    """
-    This class provides a client to interact with the GPT-3 API.
-    
-    Attributes:
-        api_key (str): The API key for the GPT-3 API.
-        model (str): The GPT-3 model to use for generating text.
-        endpoint (str): The API endpoint for completions.
-        chat_history (list): A list of chat history messages.
-        headers (dict): Headers for API requests.
-    """
-
     def __init__(self, api_key, model="gpt-3.5-turbo"):
-        """
-        Initializes the ChatGPTClient instance with the provided API key, model, and endpoint.
-        
-        :param api_key: The GPT-3 API key.
-        :param model: The GPT-3 model to use for generating text (default: "gpt-3.5-turbo").
-        :param endpoint: The API endpoint for completions (default: "https://api.openai.com/v1/chat/completions").
-        """
         self.api_key = api_key
         self.endpoint_completions = "https://api.openai.com/v1/chat/completions"
         self.model = model
@@ -141,111 +87,18 @@ class GPTClient:
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"}
         self.image_handler = ImageHandler(self.api_key)
-        self.temperature = 0.5
-        self.max_tokens = 100
-        
-    def prompt(self, prompt, chat_log=None, stop=None, max_tokens=100, temperature=0.5, top_p=1):
-        """
-        Sends a prompt to the GPT-3 API to generate a completion.
-        
-        :param prompt: The prompt to send to the API.
-        :param chat_log: Optional; the previous conversation history in the chat format.
-        :param stop: Optional; up to 4 sequences where the API will stop generating further tokens.
-        :param max_tokens: The maximum number of tokens to generate in the completion (default: 100).
-        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
-        :param top_p: An alternative to sampling with temperature (default: 1).
-        :return: The response from the API, containing the generated text.
-        """
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.api_key}'
-        }
 
-        payload = {
-            'model': 'gpt-3.5-turbo',
-            'prompt': prompt,
-            'temperature': temperature,
-            'max_tokens': max_tokens,
-            'top_p': top_p
-        }
-
-        if stop is not None:
-            payload['stop'] = stop
-
-        if chat_log is not None:
-            payload['messages'] = chat_log
-
-        url = self.endpoint_completions
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-
-        data = response.json()['choices'][0]['text']
-        return data.strip()
-
-        
-    def completions(self, prompt, max_tokens=100, temperature=0.7, top_p=1, presence_penalty=0, frequency_penalty=0, stop=None, n=1):
-        """
-        Generates completions based on the given prompt.
-        
-        :param prompt: The user's prompt.
-        :param max_tokens: The maximum number of tokens to generate in the completion (default: 100).
-        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
-        :param top_p: An alternative to sampling with temperature (default: 1).
-        :param presence_penalty: Controls how much the model should consider token presence (default: 0).
-        :param frequency_penalty: Controls how much the model should consider token frequency (default: 0).
-        :param stop: Optional; up to 4 sequences where the API will stop generating further tokens.
-        :param n: The number of completions to generate for each prompt (default: 1).
-        :return: The generated text from the completion.
-        """
-        headers = {"Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}"}
-        data = {
-            "model": self.model,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "top_p": top_p,
-            "n": n,
-            "presence_penalty": presence_penalty,
-            "frequency_penalty": frequency_penalty,
-            "stop": stop
-        }
-
-        messages = [{"role": "user", "content": prompt}]
-        data["messages"] = messages
-
-        url = self.endpoint_completions
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code != 200:
-            print(response.content.decode())
-            raise ValueError("Failed to generate completions")
-        
-        response.raise_for_status()
-        completions = response.json()["choices"]
-        results = []
-        for i in range(n):
-            results.append(completions[i]["message"]["content"])
-        return results
-
-    def generate_text(self, prompt, top_p=1, frequency_penalty=0, presence_penalty=0):
-        """
-        Generates text based on the given prompt.
-        
-        :param prompt: The user's prompt.
-        :param max_tokens: The maximum number of tokens to generate in the completion (default: 200).
-        :param temperature: The sampling temperature to use, between 0 and 1 (default: 0.5).
-        :param top_p: An alternative to sampling with temperature (default: 1).
-        :param frequency_penalty: Controls how much the model should consider token frequency (default: 0).
-        :param presence_penalty: Controls how much the model should consider token presence (default: 0).
-        :return: The generated text from the completion.
-        """
+    def completion(self, prompt, n=1, max_tokens=100, temperature=0.7, top_p=1, frequency_penalty=0, presence_penalty=0, stop=None):
         payload = {
             "model": self.model,
             "messages": [],
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
             "top_p": top_p,
             "frequency_penalty": frequency_penalty,
-            "presence_penalty": presence_penalty
+            "presence_penalty": presence_penalty,
+            "n": n,
+            "stop": stop
         }
 
         if self.chat_history:
@@ -259,76 +112,35 @@ class GPTClient:
         response.raise_for_status()
 
         result = response.json()
-        choices = result["choices"]
-        text = choices[0]["message"]["content"].strip()
+        text = [choice['message']['content'] for choice in result['choices']]
         self.add_to_chat_history(prompt, text)
         return text
 
     def add_to_chat_history(self, prompt, response):
-        """
-        Adds a prompt and response message to the chat history.
-        
-        :param prompt: The user's prompt.
-        :param response: The generated response from the model.
-        """
         prompt_message = {'role': 'user', 'content': prompt}
+        
+        if isinstance(response, list):
+            response = response[0]  # Only store the first response in the chat history
+
         response_message = {'role': 'assistant', 'content': response}
         self.chat_history.append(prompt_message)
         self.chat_history.append(response_message)
 
     def get_chat_history(self):
-        """
-        Retrieves the current chat history.
-        
-        :return: A list of dictionaries containing chat history messages.
-        """
         return self.chat_history
 
     def generate_image(self, prompt, size="medium", n=1, response_format="url"):
-        """
-        Generates an image based on the specified text prompt.
-
-        :param prompt: The text prompt to generate the image from.
-        :param size: The size of the generated image. Can be one of "256x256", "512x512", or "1024x1024".
-        :param n: The number of images to generate.
-        :param response_format: The format of the response. Can be one of "url" or "base64".
-        :return: The generated image(s), either as a URL or base64-encoded data.
-        """
         return self.image_handler.generate_image(prompt, n=n, response_format=response_format, size=size)
 
-    def generate_variation(self, image_path: str, n: int = 1, size = "medium", response_format: str = "url") -> Union[str, bytes]:
-        """
-        Generates a variation of a given image.
-        
-        :param image_path: The file path to the input image.
-        :param n: The number of images to generate (default 1).
-        :param size: The size of the generated image in pixels (default "512x512").
-        :param response_format: The format in which to return the generated image, either "url" or "base64" (default "url").
-        :return: The URL or Base64-encoded string of the generated image, depending on the value of response_format.
-        """
-
+    def generate_variation(self, image_path: str, n: int = 1, size="medium", response_format: str = "url") -> Union[str, bytes]:
         return self.image_handler.generate_variation(image_path, n=n, size=size, response_format=response_format)
+
     
 class CommandLineInterface:
-    """
-    This class provides a command line interface for interacting with a GPT-3 model.
-    
-    Attributes:
-        client (obj): The GPT-3 API client instance.
-    """
-
     def __init__(self, client):
-        """
-        Initializes the CommandLineInterface instance with the provided GPT-3 API client.
-        
-        :param client: The GPT-3 API client instance.
-        """
         self.client = client
 
     def run(self):
-        """
-        Starts the command line interface in chat mode.
-        """
         print("Welcome to TerminalGPT!")
         print("Type '/exit or /quit' to end the session.")
 
@@ -340,29 +152,20 @@ class CommandLineInterface:
                 if not self.handle_command(user_input):
                     break
             else:
-                response = self.client.generate_text(user_input)
-                self.print_response(response)
+                response = self.client.completion(user_input)
+                print(response[0])  # Only print the first response
 
-    def print_response(self, response_text):
-        """
-        Prints the GPT-3 model response.
-        
-        :param response_text: The response text from the GPT-3 model.
-        """
-        print(f"\ngpt: {response_text}")
 
     def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
-        """
-        Handle a single GPT-3 completion request.
-
-        :param prompt: The user's prompt.
-        :return: The response text from the GPT-3 model.
-        """
         if not prompt:
             return ""
 
-        # Generate chat completion
-        response = self.client.completions(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
+        response = self.client.completion(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
+
+        # Make sure the response is a list of strings
+        if not isinstance(response, list):
+            response = [response]
+
         for i, completion in enumerate(response):
             print(f"\nAnswer {i+1}:")
             print(f"\n{completion}")
@@ -371,17 +174,10 @@ class CommandLineInterface:
         return True
 
     def handle_command(self, command):
-        """
-        Processes user commands and returns a boolean indicating whether to continue the chat session.
-        
-        :param command: The user's command.
-        :return: True if the chat session should continue, False otherwise.
-        """
-        if command == "/exit" or command == "/quit":
-            return self._exit()
+        if command in ("/exit", "/quit"):
+            sys.exit(print("Goodbye!"))
         elif command == "/help":
-            self._print_help()
-            return True
+            return self._print_help()
         elif command == "/temperature":
             temp = float(input("New temperature: "))
             self.client.temperature = temp
@@ -397,19 +193,8 @@ class CommandLineInterface:
             return self._print_help()
 
     def generate_image(self, prompt, n=1, size="medium", response_format="url"):
-        """
-        Generates an image based on the provided text prompt and returns the image data.
-
-        :param prompt: The text prompt to generate the image from.
-        :param n: The number of images to generate (default 1).
-        :param size: The size of the generated image (default "512x512").
-        :param response_format: The format of the image data to return (default "url").
-        :return: The image data in the specified format.
-        """
         response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
-
-        now = datetime.now()
-        timestamp = now.strftime("%Y:%m:%d-%H:%M:%S")
+        timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
         for i, image_url in enumerate(response):
             self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-generate-{i}-{timestamp}.png"))
@@ -417,43 +202,20 @@ class CommandLineInterface:
         return True
 
     def generate_variation(self, image_path, size="medium", n=1, response_format="url"):
-        """
-        Generates a variation of an existing image given an image file path, size, and number of images to generate.
-
-        :param image_path: The path to the image file.
-        :param size: The size of the generated image (default "512x512").
-        :param n: The number of images to generate (default 1).
-        :param response_format: The format of the image data to return (default "url").
-        :return: The image data in the specified format.
-        """
-
         response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
-
-        now = datetime.now()
-        timestamp = now.strftime("%Y:%m:%d-%H:%M:%S")
+        timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
         for i, image_url in enumerate(response):
             self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{i}-{timestamp}.png"))
 
         return True
-    
 
     def save_image(self, url, file_path, timeout=30):
         with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
             out_file.write(response.read())
         print(f"Saved image to {file_path}")
 
-    def _exit(self):
-        """
-        Exits the program and prints a goodbye message.
-        """
-        print("Goodbye!")
-        sys.exit()
-
     def _print_help(self):
-        """
-        Prints the help message with the list of available commands.
-        """
         print("Available commands:")
         print("/exit or /quit: Exit the program")
         print("/temperature: set new temperature")
