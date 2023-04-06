@@ -1,43 +1,103 @@
 # TerminalGPT
 
-TerminalGPT is an interactive command-line interface that uses OpenAI's GPT-3 language model to answer questions and engage in conversations with users. It is designed for Linux environments.
-And since you're bound to wonder, yes, ChatGPT wrote a lot of the code :)
+TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo model and the DALL-E image generation API. This tool allows users to generate text completions and create images or variations of existing images using text prompts. TerminalGPT is designed for Linux systems.
 
-### Features
-- Ability to ask and receive answers to a wide range of questions
-- Option to engage in conversations with the model by entering chat mode
-- Chat history saved for reference in chat mode
-- Support for multiple GPT-3 models
-- Clear and user-friendly interface
+### Table of Contents
+- Installation
+   - Usage
+      - Text Completions
+      - Image Generation
+      - Image Variation
+   - Classes Overview
+       - ApiKeyFile
+       - CommandLineInterface
+       - GPTClient
+       - ImageHandler
+
+### Installation
+
+   1. Clone the repository to your local machine.
+   2. Make sure you have Python 3.6 or later installed.
+   3. Place your OpenAI API key in a file located at ~/.tgpt/api.
 
 ### Usage
+Text Completions:
+To generate text completions, you can run the TerminalGPT script with your text prompt as an argument:
 
-1. Clone this repository to your local machine.
-2. Create an account on the OpenAI website and obtain an API key.
-3. Create a folder called .tgpt in your home directory.
-4. Create a file called api inside the .tgpt folder.
-5. Paste your OpenAI API key in the api file and save it.
-6. Open a terminal and navigate to the root directory of the cloned repository.
-7. Run the following command to start the application: python main.py.
-8. Follow the prompts to ask questions or enter chat mode.
-9. (optional) put the gpt file in any folder in your path, and run with "gpt" from anywhere.
+```bash
 
-### Classes
-The TerminalGPT project is made up of the following classes:
-- ChatGPTClient: This class contains the methods used to interface with the OpenAI API and obtain responses from the language model.
-- CommandLineInterface: This class handles user input and output for the command-line interface, including the ability to enter chat mode and display chat history.
-- Main: This class ties together the ChatGPTClient and CommandLineInterface classes and serves as the entry point for the application.
+python main.py "Your text prompt here"
 
-### Requirements
-- Python 3.7 or higher
-- The openai and requests modules for Python
-- An OpenAI API key
+```
+Image Generation:
+To generate an image based on a text prompt, use the --generate-image flag followed by the text prompt:
 
-### Known Issues
-None at the moment.
+```bash
 
+python main.py --generate-image "A futuristic city skyline"
+
+```
+Image Variation:
+To generate a variation of an existing image, use the --generate-variation flag followed by the path to the image:
+
+```bash
+
+python main.py --generate-variation "/path/to/your/image.png"
+
+```
+### Classes Overview
+**ApiKeyFile** handles the retrieval of the API key from a file. It stores the API key in memory to avoid reading the file multiple times.
+CommandLineInterface
+
+**CommandLineInterface** provides a command-line interface for interacting with the GPTClient and ImageHandler classes. It allows users to generate text completions, images, and image variations.
+
+**GPTClient** is responsible for making requests to OpenAI's API. It handles text completions and communicates with the ImageHandler for image-related tasks.
+
+**ImageHandler** manages image generation and variation requests to the DALL-E API. It provides functions to generate images based on text prompts and create variations of existing images.
+
+### Additional Features and Options
+Chat Mode
+
+To enter chat mode, use the --chat flag:
+
+```bash
+
+python main.py --chat
+
+```
+In chat mode, you can have a conversation with the AI by typing your messages in the terminal. Type /exit or /quit to end the session.
+Customizing Text Completions
+
+You can customize the text completions by setting the --temperature, --number, and --max options:
+
+```bash
+
+python main.py "Your text prompt here" --temperature 0.5 --number 3 --max 50
+
+```
+    --temperature: Controls the randomness of the AI's output (default: 0.7).
+    --number: The number of completions to generate (default: 1).
+    --max: The maximum number of tokens to generate for completions (default: 100).
+
+### Customizing Image Generation and Variation
+
+You can customize the image generation and variation by setting the --size and --number options:
+
+```bash
+
+python main.py --generate-image "A futuristic city skyline" --size large --number 3
+
+```
+    --size: The size of the generated images (options: small, medium, large; default: medium).
+    --number: The number of images to generate or vary (default: 1).
+    
 ### Contributors
-indeedion
+Indeedion :mengus00@gmail.com
+
+### Contributing
+
+Contributions are welcome! Please submit a pull request or create an issue to propose changes or report bugs.
 
 ### License
-GNU General Public License v3.0
+
+This project is released under the MIT License.
