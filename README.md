@@ -100,4 +100,4 @@ Contributions are welcome! Please submit a pull request or create an issue to pr
 
 ### License
 
-This project is released under the MIT License.
+GNU General Public License v3.0
