@@ -1,10 +1,6 @@
 import requests
 
-class ImageHandler:
-    """
-    A class for handling image creation and variations using the OpenAI Images API.
-    """
-    
+class ImageHandler:    
     def __init__(self, api_key):
         self.api_key = api_key
         self.endpoint_generation = "https://api.openai.com/v1/images/generations"
