@@ -1,5 +1,6 @@
 import requests
 
+
 class ImageHandler:    
     def __init__(self, api_key):
         self.api_key = api_key

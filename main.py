@@ -3,6 +3,7 @@ from gpt_client import GPTClient
 from commandline_interface import CommandLineInterface
 from api_key_file import ApiKeyFile
 
+
 def main():
     # Create an ArgumentParser object to handle command line arguments
     parser = argparse.ArgumentParser()
