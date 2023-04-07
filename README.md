@@ -19,6 +19,26 @@ TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo m
    1. Clone the repository to your local machine.
    2. Make sure you have Python 3.6 or later installed.
    3. Place your OpenAI API key in a file located at ~/.tgpt/api.
+  
+### Optional Installation steps for better usage
+   4. Copy the file named tgpt to /usr/bin folder for easier systemwide usage.
+      Go to the folder you cloned it to
+      ```bash
+      cd /path/you/cloned/it/to/terminalGPT
+      ```
+      Make sure this file is executable
+      ```bash
+      sudo chmod +x tgpt
+      ```
+      Then copy
+      ```bash
+      sudo cp tgpt /usr/bin/
+      ```
+      This file contains all code in one file for easier usage.
+      Now you can use it from any where like this
+      ```bash
+      tgpt --chat
+      ```
 
 ### Usage
 Text Completions:
