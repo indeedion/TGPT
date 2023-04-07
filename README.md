@@ -1,6 +1,6 @@
 # TerminalGPT
 
-TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo model and the DALL-E image generation API. This tool allows users to generate text completions and create images or variations of existing images using text prompts. The tool is written for Linux and will not work in other environments.
+TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo model and the DALL-E image generation API. This tool allows users to generate text completions and create images or variations of existing images using text prompts. The tool is written for Linux and currently will not work in other environments.
 
 ### Table of Contents
 - Installation
