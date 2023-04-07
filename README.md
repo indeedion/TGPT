@@ -35,7 +35,7 @@ TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo m
       sudo cp tgpt /usr/bin/
       ```
       This file contains all code in one file for easier usage.
-      Now you can use it from any where like this
+      Now you can use it from anywhere like this
       ```bash
       tgpt --chat
       ```
