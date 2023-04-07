@@ -65,7 +65,7 @@ To generate a variation of an existing image, use the --generate-variation flag 
 python main.py --generate-variation "/path/to/your/image.png"
 
 ```
-**Please note** that images will be saved to ~/Pictures/TerminalGPT/. You may have to create this folder if it does not allready exist.
+**Please note** that images will be saved to ~/Pictures/TerminalGPT/. You may have to create this folder if it does not already exist.
 
 ### Classes Overview
 **ApiKeyFile** handles the retrieval of the API key from a file. It stores the API key in memory to avoid reading the file multiple times.
