@@ -6,21 +6,51 @@ import sys
 import os
 import datetime
 import urllib.request
+from configparser import ConfigParser
 from typing import Union
 from datetime import datetime
 
-class ApiKeyFile:
+class ConfigHandler:
     def __init__(self):
-        self.filename = os.path.expanduser("~/.tgpt/api")
-        self.api_key = None
-        
-    def get_api_key(self):
-        if self.api_key is None:
-            with open(self.filename, 'r') as f:
-                self.api_key = f.read().strip()
-        return self.api_key
+        self.config = ConfigParser()
+        self.config_file_path = os.path.expanduser("~/.tgpt/config")
 
-class ImageHandler:   
+        if not os.path.exists(self.config_file_path):
+            self._create_default_config()
+        else:
+            self.config.read(self.config_file_path)
+
+    def _create_default_config(self):
+        self.config["DEFAULT"] = {
+            "API": "",
+            "MODEL": "gpt-3.5-turbo",
+            "IMAGE_PATH": "~/Pictures/TerminalGPT",
+            "MAX_TOKENS": 100,
+            "TEMPERATURE": 0.7,
+        }
+
+        os.makedirs(os.path.dirname(self.config_file_path), exist_ok=True)
+
+        with open(self.config_file_path, "w") as config_file:
+            self.config.write(config_file)
+            print(f"Created a new config file at: {self.config_file_path}")
+
+    def get_api_key(self):
+        return self.config.get("DEFAULT", "API")
+
+    def get_model(self):
+        return self.config.get("DEFAULT", "MODEL")
+
+    def get_image_path(self):
+        return self.config.get("DEFAULT", "IMAGE_PATH")
+
+    def get_max_tokens(self):
+        return self.config.getint("DEFAULT", "MAX_TOKENS")
+
+    def get_temperature(self):
+        return self.config.getfloat("DEFAULT", "TEMPERATURE")
+
+class ImageHandler:    
     def __init__(self, api_key):
         self.api_key = api_key
         self.endpoint_generation = "https://api.openai.com/v1/images/generations"
@@ -60,22 +90,6 @@ class ImageHandler:
             response.raise_for_status()
             return response.json()["data"]
 
-
-    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
-        if isinstance(image_path, str):
-            image_file = open(image_path, 'rb')
-
-        data = {
-            "n": n,
-            "size": self.image_sizes[size],
-            "response_format": response_format,        
-        }
-        files = {"image": image_file}
-
-        response = requests.post(self.endpoint_variation, data=data, files=files, headers=self.headers)
-        response.raise_for_status()
-
-        return response.json()["data"]
 
 class GPTClient:
     def __init__(self, api_key, model="gpt-3.5-turbo"):
@@ -135,7 +149,7 @@ class GPTClient:
     def generate_variation(self, image_path: str, n: int = 1, size="medium", response_format: str = "url") -> Union[str, bytes]:
         return self.image_handler.generate_variation(image_path, n=n, size=size, response_format=response_format)
 
-    
+
 class CommandLineInterface:
     def __init__(self, client):
         self.client = client
@@ -153,8 +167,7 @@ class CommandLineInterface:
                     break
             else:
                 response = self.client.completion(user_input)
-                print(response[0])  # Only print the first response
-
+                print(response[0])  
 
     def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
         if not prompt:
@@ -162,7 +175,6 @@ class CommandLineInterface:
 
         response = self.client.completion(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
 
-        # Make sure the response is a list of strings
         if not isinstance(response, list):
             response = [response]
 
@@ -192,12 +204,12 @@ class CommandLineInterface:
             print("Invalid command, please use one of the following:")
             return self._print_help()
 
-    def generate_image(self, prompt, n=1, size="medium", response_format="url"):
+    def generate_image(self, prompt, image_path, n=1, size="medium", response_format="url"):
         response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
         timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-generate-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.expanduser(f"{image_path}/gpt-generate-{i}-{timestamp}.png"))
 
         return True
 
@@ -205,8 +217,10 @@ class CommandLineInterface:
         response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
         timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
+        output_folder = os.path.dirname(os.path.abspath(image_path))
+
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.join(output_folder, f"gpt-variation-{i}-{timestamp}.png"))
 
         return True
 
@@ -224,6 +238,14 @@ class CommandLineInterface:
 
 
 def main():
+    # Read config file and load values
+    config = ConfigHandler()
+    api_key = config.get_api_key()
+    model = config.get_model()
+    tokens = config.get_max_tokens()
+    temperature = config.get_temperature()
+    image_path = config.get_image_path()
+
     # Create an ArgumentParser object to handle command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("question", nargs="?", help="Text query")
@@ -231,17 +253,13 @@ def main():
     parser.add_argument("-gi", "--generate-image", metavar="PROMPT", help="Generate an image based on the given text prompt")
     parser.add_argument("-gv", "--generate-variation", metavar="EXISTING_IMAGE_PATH", help="Generate a variation of an existing image. Provide the path to the existing image as an argument.")
     parser.add_argument("-n", "--number", type=int, default=1, help="The number of images to generate or vary. Default is 1.")
-    parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=0.7, help="The temperature to use for generation (default: 0.5)")
-    parser.add_argument("-m", "--max", type=int, default=100, help="The maximum number of tokens to generate for completions(Default: 100)")
+    parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=temperature, help=f"The temperature to use for generation (default: {temperature})")
+    parser.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
     parser.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
     args = parser.parse_args()
 
-    # Load API key from file
-    api_key_file = ApiKeyFile()
-    api_key = api_key_file.get_api_key()
-
     # Create client and command line interface objects
-    client = GPTClient(api_key, "gpt-3.5-turbo")
+    client = GPTClient(api_key, model)
     cli = CommandLineInterface(client)
 
     # Check if a question was provided as an argument
@@ -256,13 +274,13 @@ def main():
     # Check if generate image mode was specified
     elif args.generate_image:
         print("Generating image...")
-        image_data = cli.generate_image(args.generate_image, n=args.number, size=args.size)
+        cli.generate_image(args.generate_image, image_path, n=args.number, size=args.size)
 
     # Check if generate variation mode was specified
     elif args.generate_variation:
         print("Creating image variation...")
         image_path = args.generate_variation
-        image_data = cli.generate_variation(image_path, n=args.number, size=args.size)
+        cli.generate_variation(image_path, n=args.number, size=args.size)
 
     # Print help message if no arguments are provided
     else:
@@ -271,4 +289,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

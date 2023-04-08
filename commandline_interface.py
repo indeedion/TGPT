@@ -22,8 +22,7 @@ class CommandLineInterface:
                     break
             else:
                 response = self.client.completion(user_input)
-                print(response[0])  # Only print the first response
-
+                print(response[0])  
 
     def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
         if not prompt:
@@ -31,7 +30,6 @@ class CommandLineInterface:
 
         response = self.client.completion(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
 
-        # Make sure the response is a list of strings
         if not isinstance(response, list):
             response = [response]
 
@@ -61,12 +59,12 @@ class CommandLineInterface:
             print("Invalid command, please use one of the following:")
             return self._print_help()
 
-    def generate_image(self, prompt, n=1, size="medium", response_format="url"):
+    def generate_image(self, prompt, image_path, n=1, size="medium", response_format="url"):
         response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
         timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-generate-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.expanduser(f"{image_path}/gpt-generate-{i}-{timestamp}.png"))
 
         return True
 
@@ -74,8 +72,10 @@ class CommandLineInterface:
         response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
         timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
+        output_folder = os.path.dirname(os.path.abspath(image_path))
+
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.expanduser(f"~/Pictures/TerminalGPT/gpt-variation-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.join(output_folder, f"gpt-variation-{i}-{timestamp}.png"))
 
         return True
 
