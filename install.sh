@@ -16,11 +16,13 @@ TEMPERATURE=0.7
 
 # Create folders if missing
 mkdir -p "$(dirname "${CONFIG_PATH}")"
+chown $ORIGINAL_USER:$ORIGINAL_USER "$(dirname "${CONFIG_PATH}")"
 
 # Ask user for desired image save path
 read -p "Enter the desired path to save images (default: ${DEFAULT_IMAGE_PATH}): " IMAGE_PATH
 IMAGE_PATH="${IMAGE_PATH:-$DEFAULT_IMAGE_PATH}"
 mkdir -p "${IMAGE_PATH}"
+chown $ORIGINAL_USER:$ORIGINAL_USER $IMAGE_PATH
 
 # Ask user for API key, create config file at CONFIG_PATH
 read -p "Please enter your API key: " API
@@ -37,11 +39,13 @@ IMAGE_PATH=${IMAGE_PATH}
 MAX_TOKENS=${MAX_TOKENS}
 TEMPERATURE=${TEMPERATURE}
 EOF
+chown $ORIGINAL_USER:$ORIGINAL_USER $CONFIG_PATH
 
 # Copy tgpt file to /usr/bin/
 if [ -f "tgpt" ]; then
     cp "tgpt" "/usr/bin/"
     chmod +x "/usr/bin/tgpt"
+    chown $ORIGINAL_USER:$ORIGINAL_USER /usr/bin/tgpt
     echo "Installation completed successfully!"
 else
     echo "Error: 'tgpt' file not found in the current directory. Exiting."
