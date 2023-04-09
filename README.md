@@ -3,73 +3,49 @@
 TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo model and the DALL-E image generation API. This tool allows users to generate text completions and create images or variations of existing images using text prompts. The tool is written for Linux and currently will not work in other environments.
 
 ### Table of Contents
-- Installation
-   - Usage
-      - Text Completions
-      - Image Generation
-      - Image Variation
-   - Classes Overview
-       - ApiKeyFile
-       - CommandLineInterface
-       - GPTClient
-       - ImageHandler
+
+- Usage
+   - Text Completions
+   - Image Generation
+   - Image Variation
+- Classes Overview
+   - ConfigHandler
+   - CommandLineInterface
+   - GPTClient
+   - ImageHandler
 
 ### Installation
 
    1. Clone the repository to your local machine.
    2. Make sure you have Python 3.6 or later installed.
-   3. Place your OpenAI API key in a file located at ~/.tgpt/api.
-  
-### Optional Installation steps for better usage
-   4. Copy the file named tgpt to /usr/bin folder for easier systemwide usage.
-      Go to the folder you cloned it to
-      ```bash
-      cd /path/you/cloned/it/to/terminalGPT
-      ```
-      Make sure this file is executable
-      ```bash
-      sudo chmod +x tgpt
-      ```
-      Then copy
-      ```bash
-      sudo cp tgpt /usr/bin/
-      ```
-      This file contains all code in one file for easier usage.
-      Now you can use it from anywhere like this
-      ```bash
-      tgpt --chat
-      ```
+   3. Run the install_script.sh with sudo: sudo ./install_script.sh. This script will guide you through the configuration process, including entering your API key and setting the image save path.
 
 ### Usage
-Text Completions:
-To generate text completions, you can run the TerminalGPT script with your text prompt as an argument:
+
+**Text Completions**
+To generate text completions, you can run TerminalGPT with your text prompt as an argument:
 
 ```bash
 
-python main.py "Your text prompt here"
-
+tgpt "Your text prompt here"
 ```
-Image Generation:
+**Image Generation**
 To generate an image based on a text prompt, use the --generate-image flag followed by the text prompt:
 
 ```bash
 
-python main.py --generate-image "A futuristic city skyline"
-
+tgpt --generate-image "A futuristic city skyline"
 ```
-Image Variation:
+**Image Variation**
 To generate a variation of an existing image, use the --generate-variation flag followed by the path to the image:
 
 ```bash
 
-python main.py --generate-variation "/path/to/your/image.png"
-
+tgpt --generate-variation "/path/to/your/image.png"
 ```
-**Please note** that images will be saved to ~/Pictures/TerminalGPT/. You may have to create this folder if it does not already exist.
-
 ### Classes Overview
-**ApiKeyFile** handles the retrieval of the API key from a file. It stores the API key in memory to avoid reading the file multiple times.
-CommandLineInterface
+
+**ConfigHandler** handles the retrieval of the API key, model, image path, max tokens, and temperature from the configuration file.
 
 **CommandLineInterface** provides a command-line interface for interacting with the GPTClient and ImageHandler classes. It allows users to generate text completions, images, and image variations.
 
@@ -78,43 +54,44 @@ CommandLineInterface
 **ImageHandler** manages image generation and variation requests to the DALL-E API. It provides functions to generate images based on text prompts and create variations of existing images.
 
 ### Additional Features and Options
-Chat Mode
+
+**Chat Mode*
 
 To enter chat mode, use the --chat flag:
 
 ```bash
 
-python main.py --chat
-
+tgpt --chat
 ```
 In chat mode, you can have a conversation with the AI by typing your messages in the terminal. Type /exit or /quit to end the session.
-Customizing Text Completions
+
+**Customizing Text Completions**
 
 You can customize the text completions by setting the --temperature, --number, and --max options:
 
 ```bash
 
-python main.py "Your text prompt here" --temperature 0.5 --number 3 --max 50
-
+tgpt "Your text prompt here" --temperature 0.5 --number 3 --max 50
 ```
     --temperature: Controls the randomness of the AI's output (default: 0.7).
     --number: The number of completions to generate (default: 1).
     --max: The maximum number of tokens to generate for completions (default: 100).
 
-### Customizing Image Generation and Variation
+**Customizing Image Generation and Variation**
 
 You can customize the image generation and variation by setting the --size and --number options:
 
 ```bash
 
-python main.py --generate-image "A futuristic city skyline" --size large --number 3
-
+tgpt --generate-image "A futuristic city skyline" --size large --number 3
 ```
     --size: The size of the generated images (options: small, medium, large; default: medium).
     --number: The number of images to generate or vary (default: 1).
-    
+
 ### Contributors
+
 Indeedion :mengus00@gmail.com
+GPT-4: openai.com
 
 ### Contributing
 
@@ -123,3 +100,18 @@ Contributions are welcome! Please submit a pull request or create an issue to pr
 ### License
 
 GNU General Public License v3.0
+
+### Changelog
+**New Features and Improvements**
+
+   - Added the ConfigHandler class for managing configuration, including API key, model, image path, max tokens, and temperature.
+   - Replaced the old API key retrieval method with the ConfigHandler class.
+   - Added an installation script (install_script.sh) to guide users through the configuration process and copy the tgpt script to /usr/bin/.
+   - Updated the tgpt script to include all the necessary code from the Python files for easier installation and removal.
+   - Enhanced the command-line interface with new options and arguments for greater flexibility and control.
+
+**Removals and Deprecations**
+
+   - Removed the ApiKeyFile class as it is now replaced by the ConfigHandler class.
+   - Deprecated the manual installation instructions for the tgpt script. Users should use the install_script.sh script for installation.
+   - Removed the old image save path configuration method. The image save path is now part of the configuration managed by ConfigHandler.
