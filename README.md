@@ -18,7 +18,7 @@ TerminalGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo m
 
    1. Clone the repository to your local machine.
    2. Make sure you have Python 3.6 or later installed.
-   3. Run the install_script.sh with sudo: sudo ./install_script.sh. This script will guide you through the configuration process, including entering your API key and setting the image save path.
+   3. Run the install script with ```sudo: sudo ./install.sh.``` This script will guide you through the configuration process, including entering your API key and setting the image save path.
 
 ### Usage
 
@@ -43,6 +43,12 @@ To generate a variation of an existing image, use the --generate-variation flag 
 
 tgpt --generate-variation "/path/to/your/image.png"
 ```
+If you ran the installation script, a file called tgpt will have been added to your /usr/bin/. Therefore, you can run the application systemwide. If you ran the installation script but do not want it to be executable systemwide, you can remove this file like so:
+```bash
+sudo rm -f /usr/bin/tgpt
+```
+You can the copy the tgpt file from the project folder to wherever you like. You can also just run the main.py file form the project folder with ```python main.py```
+
 ### Classes Overview
 
 **ConfigHandler** handles the retrieval of the API key, model, image path, max tokens, and temperature from the configuration file.
@@ -55,7 +61,7 @@ tgpt --generate-variation "/path/to/your/image.png"
 
 ### Additional Features and Options
 
-**Chat Mode*
+**Chat Mode**
 
 To enter chat mode, use the --chat flag:
 
@@ -90,8 +96,8 @@ tgpt --generate-image "A futuristic city skyline" --size large --number 3
 
 ### Contributors
 
-Indeedion :mengus00@gmail.com
-GPT-4: openai.com
+- Indeedion :mengus00@gmail.com
+- GPT-4: openai.com
 
 ### Contributing
 
