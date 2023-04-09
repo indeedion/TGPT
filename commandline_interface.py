@@ -34,7 +34,10 @@ class CommandLineInterface:
             response = [response]
 
         for i, completion in enumerate(response):
-            print(f"\nAnswer {i+1}:")
+            if i + 1 == 1:
+                print("\nAnswer:")
+            else:
+                print(f"\nAnswer {i+1}:")
             print(f"\n{completion}")
         print("\n")
 
