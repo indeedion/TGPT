@@ -119,5 +119,5 @@ GNU General Public License v3.0
 **Removals and Deprecations**
 
    - Removed the ApiKeyFile class as it is now replaced by the ConfigHandler class.
-   - Deprecated the manual installation instructions for the tgpt script. Users should use the install_script.sh script for installation.
+   - Deprecated the manual installation instructions for the tgpt script. Users should use the install.sh script for installation.
    - Removed the old image save path configuration method. The image save path is now part of the configuration managed by ConfigHandler.
