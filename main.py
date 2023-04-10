@@ -6,12 +6,17 @@ from config_handler import ConfigHandler
 
 def main():
     # Read config file and load values
-    config = ConfigHandler()
-    api_key = config.get_api_key()
-    model = config.get_model()
-    tokens = config.get_max_tokens()
-    temperature = config.get_temperature()
-    image_path = config.get_image_path()
+    try:
+        # Read config file and load values
+        config = ConfigHandler()
+        api_key = config.get_api_key()
+        model = config.get_model()
+        tokens = config.get_max_tokens()
+        temperature = config.get_temperature()
+        image_path = config.get_image_path()
+    except Exception as e:
+        print(f"Error loading config values: {e}")
+        return
 
     # Create an ArgumentParser object to handle command line arguments
     parser = argparse.ArgumentParser()
@@ -23,35 +28,48 @@ def main():
     parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=temperature, help=f"The temperature to use for generation (default: {temperature})")
     parser.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
     parser.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
-    args = parser.parse_args()
-
+    try:
+        args = parser.parse_args()
+    except SystemExit:
+        return
+    
     # Create client and command line interface objects
-    client = GPTClient(api_key, model)
-    cli = CommandLineInterface(client)
-
+    try:
+        # Create client and command line interface objects
+        client = GPTClient(api_key, model)
+        cli = CommandLineInterface(client)
+    except Exception as e:
+        print(f"Error initializing GPTClient or CommandLineInterface: {e}")
+        return
+    
     # Check if a question was provided as an argument
-    if args.question:
-        print("Sending query...")
-        response = cli.handle_completion(args.question, n=args.number, temperature=args.temperature, max_tokens=args.max)
+    try:
+        # Check if a question was provided as an argument
+        if args.question:
+            print("Sending query...")
+            response = cli.handle_completion(args.question, n=args.number, temperature=args.temperature, max_tokens=args.max)
 
-    # Check if chat mode was specified
-    elif args.chat:
-        cli.run()
+        # Check if chat mode was specified
+        elif args.chat:
+            cli.run()
 
-    # Check if generate image mode was specified
-    elif args.generate_image:
-        print("Generating image...")
-        cli.generate_image(args.generate_image, image_path, n=args.number, size=args.size)
+        # Check if generate image mode was specified
+        elif args.generate_image:
+            print("Generating image...")
+            cli.generate_image(args.generate_image, image_path, n=args.number, size=args.size)
 
-    # Check if generate variation mode was specified
-    elif args.generate_variation:
-        print("Creating image variation...")
-        image_path = args.generate_variation
-        cli.generate_variation(image_path, n=args.number, size=args.size)
+        # Check if generate variation mode was specified
+        elif args.generate_variation:
+            print("Creating image variation...")
+            image_path = args.generate_variation
+            cli.generate_variation(image_path, n=args.number, size=args.size)
 
-    # Print help message if no arguments are provided
-    else:
-        parser.print_help()
+        # Print help message if no arguments are provided
+        else:
+            parser.print_help()
+
+    except Exception as e:
+        print(f"Error handling command line arguments or processing request: {e}")
 
 
 if __name__ == "__main__":

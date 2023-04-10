@@ -1,14 +1,12 @@
-#!/bin/python
-
+#!/usr/bin/env python3
+from configparser import ConfigParser
+from datetime import datetime
+from typing import Union
 import argparse
+import os
 import requests
 import sys
-import os
-import datetime
 import urllib.request
-from configparser import ConfigParser
-from typing import Union
-from datetime import datetime
 
 class ConfigHandler:
     def __init__(self):
@@ -18,22 +16,29 @@ class ConfigHandler:
         if not os.path.exists(self.config_file_path):
             self._create_default_config()
         else:
-            self.config.read(self.config_file_path)
+            try:
+                self.config.read(self.config_file_path)
+            except Exception as e:
+                print(f"Error reading config file: {e}")
+                self._create_default_config()
 
     def _create_default_config(self):
-        self.config["DEFAULT"] = {
-            "API": "",
-            "MODEL": "gpt-3.5-turbo",
-            "IMAGE_PATH": "~/Pictures/TerminalGPT",
-            "MAX_TOKENS": 100,
-            "TEMPERATURE": 0.7,
-        }
+        try:
+            self.config["DEFAULT"] = {
+                "API": "",
+                "MODEL": "gpt-3.5-turbo",
+                "IMAGE_PATH": "~/Pictures/TerminalGPT",
+                "MAX_TOKENS": 100,
+                "TEMPERATURE": 0.7,
+            }
 
-        os.makedirs(os.path.dirname(self.config_file_path), exist_ok=True)
+            os.makedirs(os.path.dirname(self.config_file_path), exist_ok=True)
 
-        with open(self.config_file_path, "w") as config_file:
-            self.config.write(config_file)
-            print(f"Created a new config file at: {self.config_file_path}")
+            with open(self.config_file_path, "w") as config_file:
+                self.config.write(config_file)
+                print(f"Created a new config file at: {self.config_file_path}")
+        except Exception as e:
+            print(f"Error creating default config file: {e}")
 
     def get_api_key(self):
         return self.config.get("DEFAULT", "API")
@@ -49,47 +54,6 @@ class ConfigHandler:
 
     def get_temperature(self):
         return self.config.getfloat("DEFAULT", "TEMPERATURE")
-
-class ImageHandler:    
-    def __init__(self, api_key):
-        self.api_key = api_key
-        self.endpoint_generation = "https://api.openai.com/v1/images/generations"
-        self.endpoint_variation = "https://api.openai.com/v1/images/variations"
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}"
-        }
-        self.image_sizes = {"small": "256x256", "medium": "512x512", "large": "1024x1024"}
-
-    def _send_request(self, endpoint, data, files=None):
-        headers = self.headers.copy()
-        headers["Content-Type"] = "application/json"
-        response = requests.post(endpoint, headers=headers, json=data, files=files)
-        response.raise_for_status()
-        return response.json()["data"]
-
-    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
-        data = {
-            "model": "image-alpha-001",
-            "prompt": prompt,
-            "size": self.image_sizes[size],
-            "n": n,
-            "response_format": response_format,
-        }
-        return self._send_request(self.endpoint_generation, data)
-
-    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
-        with open(image_path, 'rb') as image_file:
-            data = {
-                "n": n,
-                "size": self.image_sizes[size],
-                "response_format": response_format,        
-            }
-            files = {"image": image_file}
-            headers = self.headers.copy()
-            response = requests.post(self.endpoint_variation, headers=headers, data=data, files=files)
-            response.raise_for_status()
-            return response.json()["data"]
-
 
 class GPTClient:
     def __init__(self, api_key, model="gpt-3.5-turbo"):
@@ -122,13 +86,21 @@ class GPTClient:
         else:
             payload["messages"] = [{"role": "user", "content": prompt}]
         
-        response = requests.post(self.endpoint_completions, headers=self.headers, json=payload)
-        response.raise_for_status()
+        try:
+            response = requests.post(self.endpoint_completions, headers=self.headers, json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error making request to GPT API: {e}")
+            return []
 
-        result = response.json()
-        text = [choice['message']['content'] for choice in result['choices']]
-        self.add_to_chat_history(prompt, text)
-        return text
+        try:
+            result = response.json()
+            text = [choice['message']['content'] for choice in result['choices']]
+            self.add_to_chat_history(prompt, text)
+            return text
+        except Exception as e:
+            print(f"Error processing GPT API response: {e}")
+            return []
 
     def add_to_chat_history(self, prompt, response):
         prompt_message = {'role': 'user', 'content': prompt}
@@ -149,7 +121,6 @@ class GPTClient:
     def generate_variation(self, image_path: str, n: int = 1, size="medium", response_format: str = "url") -> Union[str, bytes]:
         return self.image_handler.generate_variation(image_path, n=n, size=size, response_format=response_format)
 
-
 class CommandLineInterface:
     def __init__(self, client):
         self.client = client
@@ -159,15 +130,18 @@ class CommandLineInterface:
         print("Type '/exit or /quit' to end the session.")
 
         while True:
-            user_input = input("\nYou: ")
-            if user_input.strip() == "":
-                continue
-            if user_input.startswith("/"):
-                if not self.handle_command(user_input):
-                    break
-            else:
-                response = self.client.completion(user_input)
-                print(response[0])  
+            try:
+                user_input = input("\nYou: ")
+                if user_input.strip() == "":
+                    continue
+                if user_input.startswith("/"):
+                    if not self.handle_command(user_input):
+                        break
+                else:
+                    response = self.client.completion(user_input)
+                    print(response[0])  
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
     def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
         if not prompt:
@@ -179,7 +153,10 @@ class CommandLineInterface:
             response = [response]
 
         for i, completion in enumerate(response):
-            print(f"\nAnswer {i+1}:")
+            if i + 1 == 1:
+                print("\nAnswer:")
+            else:
+                print(f"\nAnswer {i+1}:")
             print(f"\n{completion}")
         print("\n")
 
@@ -225,9 +202,12 @@ class CommandLineInterface:
         return True
 
     def save_image(self, url, file_path, timeout=30):
-        with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
-            out_file.write(response.read())
-        print(f"Saved image to {file_path}")
+        try:
+            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
+                out_file.write(response.read())
+            print(f"Saved image to {file_path}")
+        except Exception as e:
+            print(f"An error occurred while saving the image: {e}")
 
     def _print_help(self):
         print("Available commands:")
@@ -236,15 +216,73 @@ class CommandLineInterface:
         print("/max-tokens: set new max tokens")
         print("/help: Show this help message")
 
+class ImageHandler:    
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.endpoint_generation = "https://api.openai.com/v1/images/generations"
+        self.endpoint_variation = "https://api.openai.com/v1/images/variations"
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}"
+        }
+        self.image_sizes = {"small": "256x256", "medium": "512x512", "large": "1024x1024"}
+
+    def _send_request(self, endpoint, data, files=None):
+        try:
+            headers = self.headers.copy()
+            headers["Content-Type"] = "application/json"
+            response = requests.post(endpoint, headers=headers, json=data, files=files)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error making request to OpenAI API: {e}")
+            return []
+
+        try:
+            return response.json()["data"]
+        except Exception as e:
+            print(f"Error processing OpenAI API response: {e}")
+            return []
+        
+    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
+        data = {
+            "model": "image-alpha-001",
+            "prompt": prompt,
+            "size": self.image_sizes[size],
+            "n": n,
+            "response_format": response_format,
+        }
+        return self._send_request(self.endpoint_generation, data)
+
+    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
+        try:
+            with open(image_path, 'rb') as image_file:
+                data = {
+                    "n": n,
+                    "size": self.image_sizes[size],
+                    "response_format": response_format,
+                }
+                files = {"image": image_file}
+                headers = self.headers.copy()
+                response = requests.post(self.endpoint_variation, headers=headers, data=data, files=files)
+                response.raise_for_status()
+                return response.json()["data"]
+        except Exception as e:
+            print(f"Error generating image variation: {e}")
+            return []
+
 
 def main():
     # Read config file and load values
-    config = ConfigHandler()
-    api_key = config.get_api_key()
-    model = config.get_model()
-    tokens = config.get_max_tokens()
-    temperature = config.get_temperature()
-    image_path = config.get_image_path()
+    try:
+        # Read config file and load values
+        config = ConfigHandler()
+        api_key = config.get_api_key()
+        model = config.get_model()
+        tokens = config.get_max_tokens()
+        temperature = config.get_temperature()
+        image_path = config.get_image_path()
+    except Exception as e:
+        print(f"Error loading config values: {e}")
+        return
 
     # Create an ArgumentParser object to handle command line arguments
     parser = argparse.ArgumentParser()
@@ -256,35 +294,48 @@ def main():
     parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=temperature, help=f"The temperature to use for generation (default: {temperature})")
     parser.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
     parser.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
-    args = parser.parse_args()
-
+    try:
+        args = parser.parse_args()
+    except SystemExit:
+        return
+    
     # Create client and command line interface objects
-    client = GPTClient(api_key, model)
-    cli = CommandLineInterface(client)
-
+    try:
+        # Create client and command line interface objects
+        client = GPTClient(api_key, model)
+        cli = CommandLineInterface(client)
+    except Exception as e:
+        print(f"Error initializing GPTClient or CommandLineInterface: {e}")
+        return
+    
     # Check if a question was provided as an argument
-    if args.question:
-        print("Sending query...")
-        response = cli.handle_completion(args.question, n=args.number, temperature=args.temperature, max_tokens=args.max)
+    try:
+        # Check if a question was provided as an argument
+        if args.question:
+            print("Sending query...")
+            response = cli.handle_completion(args.question, n=args.number, temperature=args.temperature, max_tokens=args.max)
 
-    # Check if chat mode was specified
-    elif args.chat:
-        cli.run()
+        # Check if chat mode was specified
+        elif args.chat:
+            cli.run()
 
-    # Check if generate image mode was specified
-    elif args.generate_image:
-        print("Generating image...")
-        cli.generate_image(args.generate_image, image_path, n=args.number, size=args.size)
+        # Check if generate image mode was specified
+        elif args.generate_image:
+            print("Generating image...")
+            cli.generate_image(args.generate_image, image_path, n=args.number, size=args.size)
 
-    # Check if generate variation mode was specified
-    elif args.generate_variation:
-        print("Creating image variation...")
-        image_path = args.generate_variation
-        cli.generate_variation(image_path, n=args.number, size=args.size)
+        # Check if generate variation mode was specified
+        elif args.generate_variation:
+            print("Creating image variation...")
+            image_path = args.generate_variation
+            cli.generate_variation(image_path, n=args.number, size=args.size)
 
-    # Print help message if no arguments are provided
-    else:
-        parser.print_help()
+        # Print help message if no arguments are provided
+        else:
+            parser.print_help()
+
+    except Exception as e:
+        print(f"Error handling command line arguments or processing request: {e}")
 
 
 if __name__ == "__main__":

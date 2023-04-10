@@ -14,15 +14,18 @@ class CommandLineInterface:
         print("Type '/exit or /quit' to end the session.")
 
         while True:
-            user_input = input("\nYou: ")
-            if user_input.strip() == "":
-                continue
-            if user_input.startswith("/"):
-                if not self.handle_command(user_input):
-                    break
-            else:
-                response = self.client.completion(user_input)
-                print(response[0])  
+            try:
+                user_input = input("\nYou: ")
+                if user_input.strip() == "":
+                    continue
+                if user_input.startswith("/"):
+                    if not self.handle_command(user_input):
+                        break
+                else:
+                    response = self.client.completion(user_input)
+                    print(response[0])  
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
     def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
         if not prompt:
@@ -83,9 +86,12 @@ class CommandLineInterface:
         return True
 
     def save_image(self, url, file_path, timeout=30):
-        with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
-            out_file.write(response.read())
-        print(f"Saved image to {file_path}")
+        try:
+            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
+                out_file.write(response.read())
+            print(f"Saved image to {file_path}")
+        except Exception as e:
+            print(f"An error occurred while saving the image: {e}")
 
     def _print_help(self):
         print("Available commands:")
@@ -96,6 +102,9 @@ class CommandLineInterface:
 
 
 if __name__ == "__main__":
-    client = GPTClient(api_key="API_KEY")
-    cli = CommandLineInterface(client)
-    cli.run()
+    try:
+        client = GPTClient(api_key="API_KEY")
+        cli = CommandLineInterface(client)
+        cli.run()
+    except Exception as e:
+        print(f"An error occurred during initialization: {e}")

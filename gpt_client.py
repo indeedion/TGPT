@@ -34,13 +34,21 @@ class GPTClient:
         else:
             payload["messages"] = [{"role": "user", "content": prompt}]
         
-        response = requests.post(self.endpoint_completions, headers=self.headers, json=payload)
-        response.raise_for_status()
+        try:
+            response = requests.post(self.endpoint_completions, headers=self.headers, json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print(f"Error making request to GPT API: {e}")
+            return []
 
-        result = response.json()
-        text = [choice['message']['content'] for choice in result['choices']]
-        self.add_to_chat_history(prompt, text)
-        return text
+        try:
+            result = response.json()
+            text = [choice['message']['content'] for choice in result['choices']]
+            self.add_to_chat_history(prompt, text)
+            return text
+        except Exception as e:
+            print(f"Error processing GPT API response: {e}")
+            return []
 
     def add_to_chat_history(self, prompt, response):
         prompt_message = {'role': 'user', 'content': prompt}
@@ -63,6 +71,9 @@ class GPTClient:
 
 
 if __name__ == "__main__":
-    client = GPTClient(api_key="API_KEY")
-    response = client.completion("Hello, how are you?", max_tokens=100)
-    print(response)
+    try:
+        client = GPTClient(api_key="API_KEY")
+        response = client.completion("Hello, how are you?", max_tokens=100)
+        print(response)
+    except Exception as e:
+        print(f"Error initializing GPTClient or making completion request: {e}")
