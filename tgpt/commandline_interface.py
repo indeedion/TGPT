@@ -23,7 +23,7 @@ class CommandLineInterface:
                         break
                 else:
                     response = self.client.completion(user_input)
-                    print(response[0])  
+                    print(f"\ngpt: {response[0]}")  
             except Exception as e:
                 print(f"An error occurred: {e}")
 
