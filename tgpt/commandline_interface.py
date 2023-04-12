@@ -1,17 +1,19 @@
 import sys
 import os
 import urllib.request
-from gpt_client import GPTClient
+import textwrap
+from .gpt_client import GPTClient
 from datetime import datetime
 
 
 class CommandLineInterface:
     def __init__(self, client):
         self.client = client
+        self.width = 80
 
     def run(self):
-        print("Welcome to TerminalGPT!")
-        print("Type '/exit or /quit' to end the session.")
+        print(f"Welcome to TGPT! You are talking to model: {self.client.get_model()}")
+        print("Type '/exit or /quit' to end the session, /help for more commands.")
 
         while True:
             try:
@@ -23,15 +25,22 @@ class CommandLineInterface:
                         break
                 else:
                     response = self.client.completion(user_input)
-                    print(f"\ngpt: {response[0]}")  
+                    wrapped_lines = []
+                    lines = response[0].split("\n")
+                    for line in lines:
+                        wrapped_line = textwrap.fill(line, width=self.width)
+                        wrapped_lines.append(wrapped_line)
+
+                    wrapped_completion = "\n".join(wrapped_lines)
+                    print(f"\nGPT: {wrapped_completion}") 
             except Exception as e:
                 print(f"An error occurred: {e}")
 
-    def handle_completion(self, prompt, n=1, temperature=0.7, max_tokens=100):
+    def handle_completion(self, prompt, n=1):
         if not prompt:
             return ""
 
-        response = self.client.completion(prompt, n=n, temperature=temperature, max_tokens=max_tokens, stop=None)
+        response = self.client.completion(prompt, n=n, stop=None)
 
         if not isinstance(response, list):
             response = [response]
@@ -41,8 +50,14 @@ class CommandLineInterface:
                 print("\nAnswer:")
             else:
                 print(f"\nAnswer {i+1}:")
-            print(f"\n{completion}")
-        print("\n")
+            wrapped_lines = []
+            lines = completion.split("\n")
+            for line in lines:
+                wrapped_line = textwrap.fill(line, width=self.width)
+                wrapped_lines.append(wrapped_line)
+
+            wrapped_completion = "\n".join(wrapped_lines)
+            print(f"\n{wrapped_completion}")
 
         return True
 
@@ -50,38 +65,46 @@ class CommandLineInterface:
         if command in ("/exit", "/quit"):
             sys.exit(print("Goodbye!"))
         elif command == "/help":
-            return self._print_help()
+            self._print_help()
+            return True
         elif command == "/temperature":
             temp = float(input("New temperature: "))
-            self.client.temperature = temp
+            self.client.set_temperature(temp)
             print(f"Temperature set to {temp}")
             return True
         elif command == "/max-tokens":
             tokens = int(input("New max tokens: "))
-            self.client.max_tokens = tokens
+            self.client.set_max_tokens(tokens)
             print(f"Max tokens set to {tokens}")
+            return True
+        elif command == "/width":
+            width = int(input("New width: "))
+            self.set_width(width)
+            print(f"New width set to {width} ")
             return True
         else:
             print("Invalid command, please use one of the following:")
             return self._print_help()
 
-    def generate_image(self, prompt, image_path, n=1, size="medium", response_format="url"):
+    def generate_image(self, prompt, n=1, size="medium", response_format="url"):
         response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
-        timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
+        timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
+        
+        current_folder = os.getcwd()
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.expanduser(f"{image_path}/gpt-generate-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
 
         return True
 
-    def generate_variation(self, image_path, size="medium", n=1, response_format="url"):
-        response = self.client.generate_variation(image_path=image_path, size=size, n=n, response_format=response_format)
+    def generate_variation(self, image_name, size="medium", n=1, response_format="url"):
+        response = self.client.generate_variation(image_name, size=size, n=n, response_format=response_format)
         timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
 
-        output_folder = os.path.dirname(os.path.abspath(image_path))
+        current_folder = os.getcwd()
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.join(output_folder, f"gpt-variation-{i}-{timestamp}.png"))
+            self.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
 
         return True
 
@@ -93,11 +116,15 @@ class CommandLineInterface:
         except Exception as e:
             print(f"An error occurred while saving the image: {e}")
 
+    def set_width(self, width):
+        self.width = width
+
     def _print_help(self):
         print("Available commands:")
         print("/exit or /quit: Exit the program")
         print("/temperature: set new temperature")
         print("/max-tokens: set new max tokens")
+        print("/width: set new print width")
         print("/help: Show this help message")
 
 

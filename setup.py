@@ -25,14 +25,7 @@ setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'sys',
-        'os',
-        'urllib.request',
-        'datetime',
-        'configparser',
-        'requests',
-        'typing',
-        'argparse'
+        'requests'
     ],
     entry_points={
         'console_scripts': [

@@ -1,4 +1,5 @@
 import requests
+import os
 
 
 class ImageHandler:    
@@ -37,7 +38,12 @@ class ImageHandler:
         }
         return self._send_request(self.endpoint_generation, data)
 
-    def generate_variation(self, image_path, n=1, size="medium", response_format="url"):
+    def generate_variation(self, image_name, n=1, size="medium", response_format="url"):
+        if os.path.isabs(image_name):
+            image_path = image_name
+        else:
+            current_folder = os.getcwd()
+            image_path = os.path.join(current_folder, image_name)
         try:
             with open(image_path, 'rb') as image_file:
                 data = {

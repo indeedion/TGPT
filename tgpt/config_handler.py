@@ -1,4 +1,5 @@
 import os
+import textwrap
 from configparser import ConfigParser
 
 
@@ -18,12 +19,21 @@ class ConfigHandler:
 
     def _create_default_config(self):
         try:
+            print(textwrap.dedent("""
+                     Welcome to TGPT!
+                     Since this is your first time you will need to provide your OpenAI API key.
+                     The key can later be found, in ~/.tgpt/config, along wth other settings.
+                  """))
+            api_key = input("Please enter your API key: ")
+
             self.config["DEFAULT"] = {
-                "API": "",
+                "API": api_key,
                 "MODEL": "gpt-3.5-turbo",
-                "IMAGE_PATH": "~/Pictures/TGPT",
-                "MAX_TOKENS": 100,
+                "MAX_TOKENS": 150,
                 "TEMPERATURE": 0.7,
+                "WIDTH": 80,
+                "NUMBER": 1,
+                "IMAGE_SIZE": "medium"
             }
 
             os.makedirs(os.path.dirname(self.config_file_path), exist_ok=True)
@@ -40,14 +50,21 @@ class ConfigHandler:
     def get_model(self):
         return self.config.get("DEFAULT", "MODEL", fallback="gpt-3.5-turbo")
 
-    def get_image_path(self):
-        return self.config.get("DEFAULT", "IMAGE_PATH", fallback="~/Pictures/TGPT")
-
     def get_max_tokens(self):
         return self.config.getint("DEFAULT", "MAX_TOKENS", fallback=100)
 
     def get_temperature(self):
         return self.config.getfloat("DEFAULT", "TEMPERATURE", fallback=0.7)
+    
+    def get_width(self):
+        return self.config.getint("DEFAULT", "WIDTH", fallback=80)
+    
+    def get_number(self):
+        return self.config.getint("DEFAULT", "NUMBER", fallback=1)
+
+    def get_image_size(self):
+        return self.config.get("DEFAULT", "IMAGE_SIZE", fallback="medium")
+
 
 if __name__ == "__main__":
     try:
