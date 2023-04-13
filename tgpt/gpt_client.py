@@ -87,6 +87,9 @@ class GPTClient:
 
     def generate_variation(self, image_name: str, n: int = 1, size="medium", response_format: str = "url") -> Union[str, bytes]:
         return self.image_handler.generate_variation(image_name, n=n, size=size, response_format=response_format)
+    
+    def save_image(self, url, file_path, timeout = 30):
+        self.image_handler.save_image(url, file_path, timeout)
 
 
 if __name__ == "__main__":

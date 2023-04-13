@@ -1,5 +1,6 @@
 import requests
 import os
+import urllib
 
 
 class ImageHandler:    
@@ -59,6 +60,14 @@ class ImageHandler:
         except Exception as e:
             print(f"Error generating image variation: {e}")
             return []
+        
+    def save_image(self, url, file_path, timeout=30):
+        try:
+            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
+                out_file.write(response.read())
+            print(f"Saved image to {file_path}")
+        except Exception as e:
+            print(f"An error occurred while saving the image: {e}")
         
 
 if __name__ == "__main__":

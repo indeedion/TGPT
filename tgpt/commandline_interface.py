@@ -93,7 +93,7 @@ class CommandLineInterface:
         current_folder = os.getcwd()
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
+            self.client.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
 
         return True
 
@@ -104,17 +104,8 @@ class CommandLineInterface:
         current_folder = os.getcwd()
 
         for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
-
+            self.client.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
         return True
-
-    def save_image(self, url, file_path, timeout=30):
-        try:
-            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
-                out_file.write(response.read())
-            print(f"Saved image to {file_path}")
-        except Exception as e:
-            print(f"An error occurred while saving the image: {e}")
 
     def set_width(self, width):
         self.width = width
