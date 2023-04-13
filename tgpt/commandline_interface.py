@@ -1,7 +1,6 @@
 import sys
 import textwrap
 from .gpt_client import GPTClient
-from datetime import datetime
 
 
 class CommandLineInterface:
@@ -44,10 +43,10 @@ class CommandLineInterface:
             response = [response]
 
         for i, completion in enumerate(response):
-            if i + 1 == 1:
-                print("\nAnswer:")
+            if n > 1:
+                print(f"\nAnswer {i + 1}:")
             else:
-                print(f"\nAnswer {i+1}:")
+                print("\nAnswer:")
             wrapped_lines = []
             lines = completion.split("\n")
             for line in lines:
@@ -58,6 +57,7 @@ class CommandLineInterface:
             print(f"\n{wrapped_completion}")
 
         return True
+
 
     def handle_command(self, command):
         if command in ("/exit", "/quit"):
@@ -84,12 +84,12 @@ class CommandLineInterface:
             print("Invalid command, please use one of the following:")
             return self._print_help()
 
-    def generate_image(self, prompt, n=1, size="medium", response_format="url"):
-        self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
+    def generate_image(self, prompt, n=1, size="medium", response_format="url", save_path = None):
+        self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format, save_path = save_path)
         return True
 
-    def generate_variation(self, image_name, size="medium", n=1, response_format="url"):
-        self.client.generate_variation(image_name, size=size, n=n, response_format=response_format)
+    def generate_variation(self, image_name, size="medium", n=1, response_format="url", save_path = None):
+        self.client.generate_variation(image_name, size=size, n=n, response_format=response_format, save_path = save_path)
         return True
 
     def set_width(self, width):

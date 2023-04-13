@@ -4,7 +4,7 @@ import urllib
 from datetime import datetime
 
 
-class ImageHandler:    
+class ImageHandler:
     def __init__(self, api_key):
         self.api_key = api_key
         self.endpoint_generation = "https://api.openai.com/v1/images/generations"
@@ -29,9 +29,9 @@ class ImageHandler:
         except Exception as e:
             print(f"Error processing OpenAI API response: {e}")
             return []
-        
-    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
-        
+
+    def generate_image(self, prompt, size="medium", n=1, response_format="url", save_path=None):
+
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
@@ -39,16 +39,18 @@ class ImageHandler:
             "n": n,
             "response_format": response_format,
         }
+
         response = self._send_request(self.endpoint_generation, data)
-
         timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
-        
-        current_folder = os.getcwd()
 
-        for i, image_url in enumerate(response):
-            self.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
+        if save_path is None:
+            save_path = os.getcwd()
 
-    def generate_variation(self, image_name, n=1, size="medium", response_format="url"):
+        if response:
+            for i, image_url in enumerate(response):
+                self.save_image(image_url, os.path.join(save_path, f"gpt-generate-{i}-{timestamp}.png"))
+
+    def generate_variation(self, image_name, n=1, size="medium", response_format="url", save_path=None):
         if os.path.isabs(image_name):
             image_path = image_name
         else:
@@ -66,30 +68,31 @@ class ImageHandler:
                 response = requests.post(self.endpoint_variation, headers=headers, data=data, files=files)
                 response.raise_for_status()
 
-                timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
+                timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
 
-                current_folder = os.getcwd()
+                if save_path is None:
+                    save_path = os.getcwd()
 
-                for i, image_url in enumerate(response.json()["data"]):
-                    self.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
+                if response.json()["data"]:
+                    for i, image_url in enumerate(response.json()["data"]):
+                        self.save_image(image_url, os.path.join(save_path, f"gpt-variation-{i}-{timestamp}.png"))
 
                 return response.json()["data"]
         except Exception as e:
             print(f"Error generating image variation: {e}")
             return []
-        
+
     def save_image(self, url, file_path, timeout=30):
         try:
-            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path, 'wb') as out_file:
+            with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path,'wb') as out_file:
                 out_file.write(response.read())
-            print(f"Saved image to {file_path}")
+                print(f"Saved image to {file_path}")
         except Exception as e:
             print(f"An error occurred while saving the image: {e}")
-        
 
-if __name__ == "__main__":
+if __name__ == "main":
     try:
         handler = ImageHandler(api_key="API_KEY")
-        image = handler.generate_image("PROMPT", size="medium")
+        image = handler.generate_image("PROMPT", size="medium", save_path="path/to/save/images")
     except Exception as e:
         print(f"Error initializing ImageHandler or generating image: {e}")

@@ -3,6 +3,11 @@ from .gpt_client import GPTClient
 from .commandline_interface import CommandLineInterface
 from .config_handler import ConfigHandler
 
+class CustomArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        self.print_help()
+        print("\nError: {}\n".format(message))
+        self.exit()
 
 def main():
     # Read config file and load values
@@ -21,15 +26,40 @@ def main():
         return
 
     # Create an ArgumentParser object to handle command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("question", nargs="?", help="Text query")
+    parser = CustomArgumentParser(
+        description="A command-line interface to interact with OpenAI GPT-3 and generate images based on prompts or variations.",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest="subparser_name", title="subcommands", metavar="{tx, gi, gv}")
+
+    # Add subparser for text query
+    parser_tx = subparsers.add_parser("tx", help="Send a text query to GPT-3")
+    parser_tx.add_argument("question", help="Text query")
+    parser_tx.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
+    parser_tx.add_argument("-n", "--number", type=int, default=1, help="The number of text completions to generate. Default is 1.")
+    parser_tx.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=temperature, help=f"The temperature to use for generation (default: {temperature})")
+
+    # Add subparser for generate image
+    parser_gi = subparsers.add_parser("gi", help="Generate an image based on the given text prompt")
+    parser_gi.add_argument("prompt", help="Text prompt for generating an image")
+    parser_gi.add_argument("-n", "--number", type=int, default=1, help="The number of images to generate. Default is 1.")
+    parser_gi.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
+    parser_gi.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
+    parser_gi.add_argument("save_path", nargs='?', default=None, help="The path to save generated images. Optional.")
+
+    # Add subparser for generate variation
+    parser_gv = subparsers.add_parser("gv", help="Generate a variation of an existing image")
+    parser_gv.add_argument("image_name", help="Name of an existing image")
+    parser_gv.add_argument("-n", "--number", type=int, default=1, help="The number of image variations to generate. Default is 1.")
+    parser_gv.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
+    parser_gv.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
+    parser_gv.add_argument("save_path", nargs='?', default=None, help="The path to save generated images. Optional.")
+
+
+    # Add top-level options
     parser.add_argument("-c", "--chat", action="store_true", help="Enter chat mode")
-    parser.add_argument("-gi", "--generate-image", metavar="PROMPT", help="Generate an image based on the given text prompt")
-    parser.add_argument("-gv", "--generate-variation", metavar="EXISTING_IMAGE_NAME", help="Generate a variation of an existing image. Provide the name of an existing image as an argument.")
-    parser.add_argument("-n", "--number", type=int, default=1, help="The number of images to generate or vary. Default is 1.")
-    parser.add_argument("-t", "--temperature", metavar="TEMPERATURE", type=float, default=temperature, help=f"The temperature to use for generation (default: {temperature})")
-    parser.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
-    parser.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="Image size")
+    
+
     try:
         args = parser.parse_args()
     except SystemExit:
@@ -54,13 +84,13 @@ def main():
         client.temperature = args.temperature
     if args.number != number:
         number = args.number
-    if args.size != image_size:
+    if args.subparser_name in ["gi", "gv"] and args.size != image_size:
         image_size = args.size
     
     # Check if a question was provided as an argument
     try:
-        # Check if a question was provided as an argument
-        if args.question:
+        # Check if query was provided with subcommand
+        if args.subparser_name == "tx":
             print("Sending query...")
             cli.handle_completion(args.question, n=number)
 
@@ -69,15 +99,15 @@ def main():
             cli.run()
 
         # Check if generate image mode was specified
-        elif args.generate_image:
+        elif args.subparser_name == "gi":
             print("Generating image...")
-            cli.generate_image(args.generate_image, n=number, size=image_size)
+            cli.generate_image(args.prompt, n=number, size=image_size, save_path=args.save_path)
 
         # Check if generate variation mode was specified
-        elif args.generate_variation:
+        elif args.subparser_name == "gv":
             print("Creating image variation...")
-            image_name = args.generate_variation
-            cli.generate_variation(image_name, n=number, size=image_size)
+            image_name = args.existing_image_name
+            cli.generate_variation(image_name, n=number, size=image_size, save_path=args.save_path)
 
         # Print help message if no arguments are provided
         else:

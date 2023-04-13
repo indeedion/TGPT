@@ -68,6 +68,9 @@ class GPTClient:
 
     def get_model(self):
         return self.model
+    
+    def get_chat_history(self):
+        return self.chat_history
 
     def add_to_chat_history(self, prompt, response):
         prompt_message = {'role': 'user', 'content': prompt}
@@ -79,14 +82,11 @@ class GPTClient:
         self.chat_history.append(prompt_message)
         self.chat_history.append(response_message)
 
-    def get_chat_history(self):
-        return self.chat_history
+    def generate_image(self, prompt, size="medium", n=1, response_format="url", save_path = None):
+        return self.image_handler.generate_image(prompt, n=n, response_format=response_format, size=size, save_path=save_path)
 
-    def generate_image(self, prompt, size="medium", n=1, response_format="url"):
-        return self.image_handler.generate_image(prompt, n=n, response_format=response_format, size=size)
-
-    def generate_variation(self, image_name: str, n: int = 1, size="medium", response_format: str = "url") -> Union[str, bytes]:
-        return self.image_handler.generate_variation(image_name, n=n, size=size, response_format=response_format)
+    def generate_variation(self, image_name: str, n: int = 1, size="medium", response_format: str = "url", save_path = None) -> Union[str, bytes]:
+        return self.image_handler.generate_variation(image_name, n=n, size=size, response_format=response_format, save_path=save_path)
     
     def save_image(self, url, file_path, timeout = 30):
         self.image_handler.save_image(url, file_path, timeout)
