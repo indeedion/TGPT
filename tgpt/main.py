@@ -106,7 +106,7 @@ def main():
         # Check if generate variation mode was specified
         elif args.subparser_name == "gv":
             print("Creating image variation...")
-            image_name = args.existing_image_name
+            image_name = args.image_name
             cli.generate_variation(image_name, n=number, size=image_size, save_path=args.save_path)
 
         # Print help message if no arguments are provided
