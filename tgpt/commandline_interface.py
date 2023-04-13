@@ -18,7 +18,10 @@ class CommandLineInterface:
                 if user_input.strip() == "":
                     continue
                 if user_input.startswith("/"):
-                    if not self.handle_command(user_input):
+                    command_parts = user_input.split()
+                    command = command_parts[0]
+                    args = command_parts[1:]
+                    if not self.handle_command(command, args):
                         break
                 else:
                     response = self.client.completion(user_input)
@@ -59,30 +62,40 @@ class CommandLineInterface:
         return True
 
 
-    def handle_command(self, command):
+    def handle_command(self, command, args=None):
         if command in ("/exit", "/quit"):
             sys.exit(print("Goodbye!"))
         elif command == "/help":
             self._print_help()
             return True
         elif command == "/temperature":
-            temp = float(input("New temperature: "))
+            if args and len(args) > 0:
+                temp = float(args[0])
+            else:
+                temp = float(input("New temperature: "))
             self.client.set_temperature(temp)
             print(f"Temperature set to {temp}")
             return True
         elif command == "/max-tokens":
-            tokens = int(input("New max tokens: "))
+            if args and len(args) > 0:
+                tokens = int(args[0])
+            else:
+                tokens = int(input("New max tokens: "))
             self.client.set_max_tokens(tokens)
             print(f"Max tokens set to {tokens}")
             return True
         elif command == "/width":
-            width = int(input("New width: "))
+            if args and len(args) > 0:
+                width = int(args[0])
+            else:
+                width = int(input("New width: "))
             self.set_width(width)
             print(f"New width set to {width} ")
             return True
         else:
             print("Invalid command, please use one of the following:")
-            return self._print_help()
+            self._print_help()
+            return True
 
     def generate_image(self, prompt, n=1, size="medium", response_format="url", save_path = None):
         self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format, save_path = save_path)

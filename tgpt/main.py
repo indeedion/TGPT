@@ -78,13 +78,13 @@ def main():
         return
     
     # Set values passed from CLI if present
-    if args.max != tokens:
+    if hasattr(args, 'max') and args.max != tokens:
         client.max_tokens = args.max
-    if args.temperature != temperature:
+    if hasattr(args, 'temperature') and args.temperature != temperature:
         client.temperature = args.temperature
-    if args.number != number:
+    if hasattr(args, 'number') and args.number != number:
         number = args.number
-    if args.subparser_name in ["gi", "gv"] and args.size != image_size:
+    if hasattr(args, 'size') and args.size != image_size:
         image_size = args.size
     
     # Check if a question was provided as an argument
