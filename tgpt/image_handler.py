@@ -1,6 +1,7 @@
 import requests
 import os
 import urllib
+from datetime import datetime
 
 
 class ImageHandler:    
@@ -30,6 +31,7 @@ class ImageHandler:
             return []
         
     def generate_image(self, prompt, size="medium", n=1, response_format="url"):
+        
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
@@ -37,7 +39,14 @@ class ImageHandler:
             "n": n,
             "response_format": response_format,
         }
-        return self._send_request(self.endpoint_generation, data)
+        response = self._send_request(self.endpoint_generation, data)
+
+        timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
+        
+        current_folder = os.getcwd()
+
+        for i, image_url in enumerate(response):
+            self.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
 
     def generate_variation(self, image_name, n=1, size="medium", response_format="url"):
         if os.path.isabs(image_name):
@@ -56,6 +65,14 @@ class ImageHandler:
                 headers = self.headers.copy()
                 response = requests.post(self.endpoint_variation, headers=headers, data=data, files=files)
                 response.raise_for_status()
+
+                timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
+
+                current_folder = os.getcwd()
+
+                for i, image_url in enumerate(response.json()["data"]):
+                    self.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
+
                 return response.json()["data"]
         except Exception as e:
             print(f"Error generating image variation: {e}")

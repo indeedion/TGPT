@@ -1,6 +1,4 @@
 import sys
-import os
-import urllib.request
 import textwrap
 from .gpt_client import GPTClient
 from datetime import datetime
@@ -87,24 +85,11 @@ class CommandLineInterface:
             return self._print_help()
 
     def generate_image(self, prompt, n=1, size="medium", response_format="url"):
-        response = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
-        timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
-        
-        current_folder = os.getcwd()
-
-        for i, image_url in enumerate(response):
-            self.client.save_image(image_url, os.path.join(current_folder, f"gpt-generate-{i}-{timestamp}.png"))
-
+        self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format)
         return True
 
     def generate_variation(self, image_name, size="medium", n=1, response_format="url"):
-        response = self.client.generate_variation(image_name, size=size, n=n, response_format=response_format)
-        timestamp = datetime.now().strftime("%Y:%m:%d-%H:%M:%S")
-
-        current_folder = os.getcwd()
-
-        for i, image_url in enumerate(response):
-            self.client.save_image(image_url, os.path.join(current_folder, f"gpt-variation-{i}-{timestamp}.png"))
+        self.client.generate_variation(image_name, size=size, n=n, response_format=response_format)
         return True
 
     def set_width(self, width):
