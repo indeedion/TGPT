@@ -86,7 +86,7 @@ class ImageHandler:
         try:
             with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path,'wb') as out_file:
                 out_file.write(response.read())
-                print(f"Saved image to {file_path}")
+                print(f"\nSaved image to {file_path}")
         except Exception as e:
             print(f"An error occurred while saving the image: {e}")
 

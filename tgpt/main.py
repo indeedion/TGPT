@@ -91,7 +91,6 @@ def main():
     try:
         # Check if query was provided with subcommand
         if args.subparser_name == "tx":
-            print("Sending query...")
             cli.handle_completion(args.question, n=number)
 
         # Check if chat mode was specified
@@ -100,12 +99,10 @@ def main():
 
         # Check if generate image mode was specified
         elif args.subparser_name == "gi":
-            print("Generating image...")
             cli.generate_image(args.prompt, n=number, size=image_size, save_path=args.save_path)
 
         # Check if generate variation mode was specified
         elif args.subparser_name == "gv":
-            print("Creating image variation...")
             image_name = args.image_name
             cli.generate_variation(image_name, n=number, size=image_size, save_path=args.save_path)
 
