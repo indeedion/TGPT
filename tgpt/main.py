@@ -27,7 +27,7 @@ def main():
 
     # Create an ArgumentParser object to handle command line arguments
     parser = CustomArgumentParser(
-        description="A command-line interface to interact with OpenAI GPT-3 and generate images based on prompts or variations.",
+        description="A command-line interface to chat with OpenAI GPT-3, and generate images based on prompts or variations.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="subparser_name", title="subcommands", metavar="{tx, gi, gv}")

@@ -73,7 +73,7 @@ class CommandLineInterface:
             elif completion_length > 40:
                 print("\n\nAnswer:")
 
-            print(f"{wrapped_completion}")
+            print(f"\n{wrapped_completion}")
 
         print("")
         return True
