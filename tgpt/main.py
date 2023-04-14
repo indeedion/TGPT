@@ -56,9 +56,9 @@ def main():
 
     parser_gv = subparsers.add_parser("gv", help="Generate a variation of an existing image")
     parser_gv.description = "Generate variations of already existing image"
-    parser_gv.usage = "usage: tgpt gv [image_path] [save_path] [-h] [-s {small,medium,large}] [-n NUM] [-t TEMP]"
+    parser_gv.usage = "usage: tgpt gv image_path [save_path] [-h] [-s {small,medium,large}] [-n NUM] [-t TEMP]"
     parser_gv.add_argument("image_name", type=str, help="Path to the input image for generating a variation")
-    parser_gv.add_argument("save_path", type=str, nargs="?", default="", help="Optional save path for the generated images")
+    parser_gv.add_argument("save_path", type=str, nargs="?", default="", help="Optional save path for the generated images (default: current directory)")
     parser_gv.add_argument("-s", "--size", type=str, choices=["small", "medium", "large"], default="medium", help=f"Size of the generated image (Default: {image_size})")
     parser_gv.add_argument("-n", "--num", type=int, default=1, help="Number of image variations to generate (Default: 1)")
     parser_gv.add_argument("-t", "--temp", type=float, default=temperature, help=f"Sampling temperature for generating responses (Default: {temperature})")
@@ -88,8 +88,8 @@ def main():
         client.max_tokens = args.max
     if hasattr(args, 'temperature') and args.temperature != temperature:
         client.temperature = args.temperature
-    if hasattr(args, 'number') and args.number != number:
-        number = args.number
+    if hasattr(args, 'num') and args.num != number:
+        number = args.num
     if hasattr(args, 'size') and args.size != image_size:
         image_size = args.size
     
