@@ -31,7 +31,6 @@ class ImageHandler:
             return []
 
     def generate_image(self, prompt, size="medium", n=1, response_format="url", save_path=None):
-
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
@@ -80,7 +79,7 @@ class ImageHandler:
                 if response.json()["data"]:
                     for i, image_url in enumerate(response.json()["data"]):
                         save_paths.append(self.save_image(image_url, os.path.join(save_path, f"gpt-variation-{i}-{timestamp}.png")))
-                        
+
             return save_paths
         except Exception as e:
             print(f"Error generating image variation: {e}")

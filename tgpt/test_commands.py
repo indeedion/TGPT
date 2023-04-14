@@ -4,7 +4,7 @@ import time
 import subprocess
 from config_handler import ConfigHandler
 
-# Get config for API key
+# Get config for API key and set sleeptime, so the API doesn't get spammed
 config = ConfigHandler()
 sleep_time = 6
 

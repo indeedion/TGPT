@@ -76,7 +76,7 @@ class GPTClient:
         prompt_message = {'role': 'user', 'content': prompt}
         
         if isinstance(response, list):
-            response = response[0]  # Only store the first response in the chat history
+            response = response[0] 
 
         response_message = {'role': 'assistant', 'content': response}
         self.chat_history.append(prompt_message)
@@ -87,9 +87,6 @@ class GPTClient:
 
     def generate_variation(self, image_name: str, n: int = 1, size="medium", response_format: str = "url", save_path = None) -> Union[str, bytes]:
         return self.image_handler.generate_variation(image_name, n=n, size=size, response_format=response_format, save_path=save_path)
-    
-    #def save_image(self, url, file_path, timeout = 30):
-        #self.image_handler.save_image(url, file_path, timeout)
 
 
 if __name__ == "__main__":

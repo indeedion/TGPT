@@ -116,8 +116,8 @@ class CommandLineInterface:
 
     def generate_image(self, prompt, n=1, size="medium", response_format="url", save_path=None):
         try:
-            sys.stdout.write("Generating image... ")  # Move this line here
-            sys.stdout.flush()  # Add this line
+            sys.stdout.write("Generating image... ") 
+            sys.stdout.flush() 
 
             self.spinner_active = True
             spinner_thread = threading.Thread(target=self.spin_cursor)
@@ -128,7 +128,7 @@ class CommandLineInterface:
             self.spinner_active = False
             spinner_thread.join()
 
-            print("Image generated successfully.")  # Add a newline character before the message
+            print("Image generated successfully.")  
 
         except Exception as e:
             self.spinner_active = False
@@ -140,8 +140,8 @@ class CommandLineInterface:
 
     def generate_variation(self, image_name, size="medium", n=1, response_format="url", save_path=None):
         try:
-            sys.stdout.write("Generating image variation... ")  # Move this line here
-            sys.stdout.flush()  # Add this line
+            sys.stdout.write("Generating image variation... ") 
+            sys.stdout.flush()  
 
             self.spinner_active = True
             spinner_thread = threading.Thread(target=self.spin_cursor)
