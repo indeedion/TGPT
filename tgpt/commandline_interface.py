@@ -123,7 +123,7 @@ class CommandLineInterface:
             spinner_thread = threading.Thread(target=self.spin_cursor)
             spinner_thread.start()
 
-            self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format, save_path=save_path)
+            save_paths = self.client.generate_image(prompt=prompt, n=n, size=size, response_format=response_format, save_path=save_path)
 
             self.spinner_active = False
             spinner_thread.join()
@@ -135,7 +135,7 @@ class CommandLineInterface:
             spinner_thread.join()
             print(f"\rError generating image: {e}")
             return False
-        return True
+        return save_paths
 
 
     def generate_variation(self, image_name, size="medium", n=1, response_format="url", save_path=None):
@@ -147,7 +147,7 @@ class CommandLineInterface:
             spinner_thread = threading.Thread(target=self.spin_cursor)
             spinner_thread.start()
 
-            self.client.generate_variation(image_name, size=size, n=n, response_format=response_format, save_path=save_path)
+            save_paths = self.client.generate_variation(image_name, size=size, n=n, response_format=response_format, save_path=save_path)
 
             self.spinner_active = False
             spinner_thread.join()
@@ -155,7 +155,7 @@ class CommandLineInterface:
         except Exception as e:
             print(f"Error generating image variation: {e}")
             return False
-        return True
+        return save_paths
 
     def set_width(self, width):
         self.width = width

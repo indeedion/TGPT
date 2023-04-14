@@ -42,13 +42,16 @@ class ImageHandler:
 
         response = self._send_request(self.endpoint_generation, data)
         timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
+        save_paths = []
 
         if save_path is None:
             save_path = os.getcwd()
 
         if response:
             for i, image_url in enumerate(response):
-                self.save_image(image_url, os.path.join(save_path, f"gpt-generate-{i}-{timestamp}.png"))
+                save_paths.append(self.save_image(image_url, os.path.join(save_path, f"gpt-generate-{i}-{timestamp}.png")))
+
+        return save_paths
 
     def generate_variation(self, image_name, n=1, size="medium", response_format="url", save_path=None):
         if os.path.isabs(image_name):
@@ -69,13 +72,16 @@ class ImageHandler:
                 response.raise_for_status()
 
                 timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
+                save_paths = []
 
                 if save_path is None:
                     save_path = os.getcwd()
 
                 if response.json()["data"]:
                     for i, image_url in enumerate(response.json()["data"]):
-                        self.save_image(image_url, os.path.join(save_path, f"gpt-variation-{i}-{timestamp}.png"))
+                        save_paths.append(self.save_image(image_url, os.path.join(save_path, f"gpt-variation-{i}-{timestamp}.png")))
+                        
+            return save_paths
         except Exception as e:
             print(f"Error generating image variation: {e}")
             return []
@@ -85,6 +91,7 @@ class ImageHandler:
             with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path,'wb') as out_file:
                 out_file.write(response.read())
                 print(f"\nSaved image to {file_path}")
+                return file_path
         except Exception as e:
             print(f"An error occurred while saving the image: {e}")
 

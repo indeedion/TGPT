@@ -38,22 +38,30 @@ def main():
 
     # Add subparser for text query
     parser_tx = subparsers.add_parser("tx", help="Send a text query to GPT-3")
-    parser_tx.add_argument("query", type=str, help="Text query to send to GPT-3")
+    parser_tx.description = "Query GPT with a question or statement and get an answer"
+    parser_tx.usage = "usage: tgpt tx prompt [-h] [-n NUM] [-t TEMP] [-m MAX]"
+    parser_tx.add_argument("prompt", type=str, help="Text query to send to GPT-3")
     parser_tx.add_argument("-n", "--num", type=int, default=1, help="Number of responses to generate (Default: 1)")
-    parser_tx.add_argument("-t", "--temp", type=float, default=temperature, help="Sampling temperature for generating responses (Default: 0.8)")
+    parser_tx.add_argument("-t", "--temp", type=float, default=temperature, help=f"Sampling temperature for generating responses (Default: {temperature})")
+    parser_tx.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")
 
     parser_gi = subparsers.add_parser("gi", help="Generate an image based on the given text prompt", formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser_gi.description = "usage: tgpt gi prompt [save_path] [-h] [-s {small,medium,large}] [-n NUM]"
+    parser_gi.description = "Generate images from text prompt"
+    parser_gi.usage = "usage: tgpt gi prompt [save_path] [-h] [-s {small,medium,large}] [-n NUM] [-t TEMP]"
     parser_gi.add_argument("prompt", help="The text prompt to generate an image")
     parser_gi.add_argument("save_path", nargs="?", default=None, help="Path to save the generated image (default: current directory)")
-    parser_gi.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help="The size of the generated image (default: medium)")
+    parser_gi.add_argument("-s", "--size", choices=["small", "medium", "large"], default="medium", help=f"The size of the generated image (default: {image_size})")
     parser_gi.add_argument("-n", "--num", type=int, default=1, help="The number of images to generate (default: 1)")
+    parser_gi.add_argument("-t", "--temp", type=float, default=temperature, help=f"Sampling temperature for generating responses (Default: {temperature})")
 
     parser_gv = subparsers.add_parser("gv", help="Generate a variation of an existing image")
+    parser_gv.description = "Generate variations of already existing image"
+    parser_gv.usage = "usage: tgpt gv [image_path] [save_path] [-h] [-s {small,medium,large}] [-n NUM] [-t TEMP]"
     parser_gv.add_argument("image_name", type=str, help="Path to the input image for generating a variation")
     parser_gv.add_argument("save_path", type=str, nargs="?", default="", help="Optional save path for the generated images")
-    parser_gv.add_argument("-s", "--size", type=str, choices=["small", "medium", "large"], default="medium", help="Size of the generated image (Default: medium)")
+    parser_gv.add_argument("-s", "--size", type=str, choices=["small", "medium", "large"], default="medium", help=f"Size of the generated image (Default: {image_size})")
     parser_gv.add_argument("-n", "--num", type=int, default=1, help="Number of image variations to generate (Default: 1)")
+    parser_gv.add_argument("-t", "--temp", type=float, default=temperature, help=f"Sampling temperature for generating responses (Default: {temperature})")
     
     # Add top-level options
     parser.add_argument("-c", "--chat", action="store_true", help="Enter chat mode")
@@ -89,7 +97,7 @@ def main():
     try:
         # Check if query was provided with subcommand
         if args.subparser_name == "tx":
-            cli.handle_completion(args.query, n=number)
+            cli.handle_completion(args.prompt, n=number)
 
         # Check if chat mode was specified
         elif args.chat:
