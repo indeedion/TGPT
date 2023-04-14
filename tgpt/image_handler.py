@@ -76,8 +76,6 @@ class ImageHandler:
                 if response.json()["data"]:
                     for i, image_url in enumerate(response.json()["data"]):
                         self.save_image(image_url, os.path.join(save_path, f"gpt-variation-{i}-{timestamp}.png"))
-
-                return response.json()["data"]
         except Exception as e:
             print(f"Error generating image variation: {e}")
             return []
@@ -90,7 +88,7 @@ class ImageHandler:
         except Exception as e:
             print(f"An error occurred while saving the image: {e}")
 
-if __name__ == "main":
+if __name__ == "__main__":
     try:
         handler = ImageHandler(api_key="API_KEY")
         image = handler.generate_image("PROMPT", size="medium", save_path="path/to/save/images")

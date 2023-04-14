@@ -134,6 +134,7 @@ class CommandLineInterface:
             self.spinner_active = False
             spinner_thread.join()
             print(f"\rError generating image: {e}")
+            return False
         return True
 
 
@@ -153,6 +154,7 @@ class CommandLineInterface:
             print("Image variation created successfully.")
         except Exception as e:
             print(f"Error generating image variation: {e}")
+            return False
         return True
 
     def set_width(self, width):
