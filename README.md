@@ -42,17 +42,17 @@ tgpt "Your text prompt here"
 ```
 
 #### Image Generation
-To generate an image based on a text prompt, use the --generate-image flag followed by the text prompt:
+To generate an image based on a text prompt, use the gi command followed by the text prompt:
 
 ```bash
-tgpt --generate-image "A futuristic city skyline"
+tgpt gi "A futuristic city skyline"
 ```
 
 #### Image Variation
-To generate a variation of an existing image, use the --generate-variation flag followed by the path to the image:
+To generate a variation of an existing image, use the gv command followed by the path to the image:
 
 ```bash
-tgpt --generate-variation "/path/to/your/image.png"
+tgpt gv "/path/to/your/image.png"
 ```
 
 ### Classes Overview
