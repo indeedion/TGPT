@@ -5,7 +5,16 @@ from datetime import datetime
 
 
 class ImageHandler:
+    """
+    A handler for generating and saving images from the OpenAI API.
+    
+    Attributes:
+        api_key (str): The OpenAI API key.
+    """
     def __init__(self, api_key):
+        """
+        Initialize the ImageHandler with the given API key.
+        """
         self.api_key = api_key
         self.endpoint_generation = "https://api.openai.com/v1/images/generations"
         self.endpoint_variation = "https://api.openai.com/v1/images/variations"
@@ -15,6 +24,12 @@ class ImageHandler:
         self.image_sizes = {"small": "256x256", "medium": "512x512", "large": "1024x1024"}
 
     def _send_request(self, endpoint, data, files=None):
+        """
+        Send a request to the OpenAI API endpoint with the provided data.
+        
+        Returns:
+            list: A list containing the JSON response data.
+        """
         try:
             headers = self.headers.copy()
             headers["Content-Type"] = "application/json"
@@ -31,6 +46,12 @@ class ImageHandler:
             return []
 
     def generate_image(self, prompt, size="medium", n=1, response_format="url", save_path=None):
+        """
+        Generate an image based on the given prompt and save it to the specified location.
+        
+        Returns:
+            list: A list of file paths where the generated images are saved.
+        """
         data = {
             "model": "image-alpha-001",
             "prompt": prompt,
@@ -58,6 +79,12 @@ class ImageHandler:
         return save_paths
 
     def generate_variation(self, image_name, n=1, size="medium", response_format="url", save_path=None):
+        """
+        Generate a variation of the given image and save it to the specified location.
+        
+        Returns:
+            list: A list of file paths where the generated image variations are saved.
+        """
         if os.path.isabs(image_name):
             image_path = image_name
         else:
@@ -91,6 +118,12 @@ class ImageHandler:
             return []
 
     def save_image(self, url, file_path, timeout=30):
+        """
+        Save the image from the provided URL to the specified file path.
+        
+        Returns:
+            str: The file path where the image is saved.
+        """
         try:
             with urllib.request.urlopen(url['url'], timeout=timeout) as response, open(file_path,'wb') as out_file:
                 out_file.write(response.read())

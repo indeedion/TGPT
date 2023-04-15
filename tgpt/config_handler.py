@@ -4,7 +4,17 @@ from configparser import ConfigParser
 
 
 class ConfigHandler:
+    """
+    A configuration handler for TGPT that reads and writes configuration settings.
+    
+    Attributes:
+        config (ConfigParser): A ConfigParser instance for managing the configuration.
+        config_file_path (str): The path to the configuration file.
+    """
     def __init__(self):
+        """
+        Initialize the ConfigHandler and read the configuration file or create a default one.
+        """
         self.config = ConfigParser()
         self.config_file_path = os.path.expanduser("~/.tgpt/config")
 
@@ -18,6 +28,9 @@ class ConfigHandler:
                 self._create_default_config()
 
     def _create_default_config(self):
+        """
+        Create a default configuration file and prompt the user for their API key.
+        """
         try:
             print(textwrap.dedent("""
                      Welcome to TGPT!
@@ -45,24 +58,66 @@ class ConfigHandler:
             print(f"Error creating default config file: {e}")
 
     def get_api_key(self):
+        """
+        Retrieve the API key from the configuration file.
+        
+        Returns:
+            str: The API key.
+        """
         return self.config.get("DEFAULT", "API", fallback="")
 
     def get_model(self):
+        """
+        Retrieve the model name from the configuration file.
+        
+        Returns:
+            str: The model name.
+        """
         return self.config.get("DEFAULT", "MODEL", fallback="gpt-3.5-turbo")
 
     def get_max_tokens(self):
+        """
+        Retrieve the maximum tokens value from the configuration file.
+        
+        Returns:
+            int: The maximum tokens value.
+        """
         return self.config.getint("DEFAULT", "MAX_TOKENS", fallback=100)
 
     def get_temperature(self):
+        """
+        Retrieve the temperature value from the configuration file.
+        
+        Returns:
+            float: The temperature value.
+        """
         return self.config.getfloat("DEFAULT", "TEMPERATURE", fallback=0.7)
     
     def get_width(self):
+        """
+        Retrieve the width value from the configuration file.
+        
+        Returns:
+            int: The width value.
+        """
         return self.config.getint("DEFAULT", "WIDTH", fallback=80)
     
     def get_number(self):
+        """
+        Retrieve the number value from the configuration file.
+        
+        Returns:
+            int: The number value.
+        """
         return self.config.getint("DEFAULT", "NUMBER", fallback=1)
 
     def get_image_size(self):
+        """
+        Retrieve the image size value from the configuration file.
+        
+        Returns:
+            str: The image size value.
+        """
         return self.config.get("DEFAULT", "IMAGE_SIZE", fallback="medium")
 
 

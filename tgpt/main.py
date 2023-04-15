@@ -4,15 +4,25 @@ from .commandline_interface import CommandLineInterface
 from .config_handler import ConfigHandler
 
 class CustomArgumentParser(argparse.ArgumentParser):
+    """
+    A custom ArgumentParser that overrides the error method to display the help message along with the error message.
+    """
     def error(self, message):
+        """
+        Override the default error method to display the help message along with the error message.
+        """
         self.print_help()
         print("\nError: {}\n".format(message))
         self.exit()
 
 def main():
+    """
+    The main function for the command-line interface to interact with OpenAI's GPT-3.5 API.
+    This function handles command-line arguments and calls the appropriate methods based on the input.
+    """
+    
     # Read config file and load values
     try:
-        # Read config file and load values
         config = ConfigHandler()
         api_key = config.get_api_key()
         model = config.get_model()

@@ -6,12 +6,29 @@ from .gpt_client import GPTClient
 
 
 class CommandLineInterface:
+    """
+    A command line interface for interacting with a GPTClient instance.
+    
+    Attributes:
+        client (GPTClient): The GPTClient instance for making API calls.
+        width (int): The maximum width for text wrapping.
+        spinner_active (bool): Flag to control the spinner during API calls.
+    """
     def __init__(self, client):
+        """
+        Initialize the CommandLineInterface with a GPTClient instance.
+        
+        Args:
+            client (GPTClient): The GPTClient instance for making API calls.
+        """
         self.client = client
         self.width = 80
         self.spinner_active = False
 
     def run(self):
+        """
+        Start the main loop of the command line interface.
+        """
         print(f"Welcome to TGPT! You are talking to model: {self.client.get_model()}")
         print("Type '/exit or /quit' to end the session, /help for more commands.")
 
@@ -40,6 +57,16 @@ class CommandLineInterface:
                 print(f"An error occurred: {e}")
 
     def handle_completion(self, prompt, n=1):
+        """
+        Handle completion requests to the GPTClient.
+        
+        Args:
+            prompt (str): The prompt to send to the GPTClient.
+            n (int, optional): The number of responses to request. Defaults to 1.
+        
+        Returns:
+            bool: True if a response is received, False otherwise.
+        """
         if not prompt:
             return ""
 
@@ -80,6 +107,16 @@ class CommandLineInterface:
 
 
     def handle_command(self, command, args=[]):
+        """
+        Handle command inputs from the user.
+        
+        Args:
+            command (str): The command inputted by the user.
+            args (list, optional): Additional arguments for the command. Defaults to [].
+        
+        Returns:
+            bool: True if the command is handled, False otherwise.
+        """
         if command in ("/exit", "/quit"):
             sys.exit(print("Goodbye!"))
         elif command == "/help":
@@ -115,6 +152,19 @@ class CommandLineInterface:
             return True
 
     def generate_image(self, prompt, n=1, size="medium", response_format="url", save_path=None):
+        """
+        Generate an image using the GPTClient's image generation functionality.
+        
+        Args:
+            prompt (str): The prompt to generate the image.
+            n (int, optional): The number of images to generate. Defaults to 1.
+            size (str, optional): The size of the generated image. Defaults to "medium".
+            response_format (str, optional): The format of the response. Defaults to "url".
+            save_path (str, optional): The path to save the generated images. Defaults to None.
+        
+        Returns:
+            list: A list of save paths of the generated images, or False if an error occurs.
+        """
         try:
             sys.stdout.write("Generating image... ") 
             sys.stdout.flush() 
@@ -139,6 +189,19 @@ class CommandLineInterface:
 
 
     def generate_variation(self, image_name, size="medium", n=1, response_format="url", save_path=None):
+        """
+        Generate a variation of an image using the GPTClient's image variation functionality.
+        
+        Args:
+            image_name (str): The name of the image to generate a variation for.
+            size (str, optional): The size of the generated image. Defaults to "medium".
+            n (int, optional): The number of variations to generate. Defaults to 1.
+            response_format (str, optional): The format of the response. Defaults to "url".
+            save_path (str, optional): The path to save the generated images. Defaults to None.
+        
+        Returns:
+            list: A list of save paths of the generated image variations, or False if an error occurs.
+        """
         try:
             sys.stdout.write("Generating image variation... ") 
             sys.stdout.flush()  
@@ -158,15 +221,27 @@ class CommandLineInterface:
         return save_paths
 
     def set_width(self, width):
+        """
+        Set the width attribute for text wrapping.
+        
+        Args:
+            width (int): The new width for text wrapping.
+        """
         self.width = width
 
     @staticmethod
     def spinning_cursor():
+        """
+        Generator function for a spinning cursor animation.
+        """
         while True:
             for cursor in '|/-\\':
                 yield cursor
 
     def spin_cursor(self):
+        """
+        Display a spinning cursor animation while the spinner_active flag is True.
+        """
         spinner = self.spinning_cursor()
         while self.spinner_active:
             sys.stdout.write(next(spinner))
@@ -175,6 +250,9 @@ class CommandLineInterface:
             sys.stdout.write('\b')
 
     def _print_help(self):
+        """
+        Print the help message with available commands.
+        """
         print("Available commands:")
         print("/exit or /quit: Exit the program")
         print("/temperature: set new temperature")
