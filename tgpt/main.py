@@ -29,7 +29,7 @@ def main():
 
     # Create an ArgumentParser object to handle command line arguments
     parser = argparse.ArgumentParser(
-        description="A command-line interface to chat with OpenAI GPT-3, and generate images based on prompts or variations.\n\n"
+        description="A command-line interface to chat with OpenAI GPT-3.5, and generate images based on prompts or variations.\n\n"
                     "To see detailed help for each subcommand, run: tgpt <subcommand> -h\n"
                     "Example: tgpt tx -h\n",
         epilog="",
@@ -39,10 +39,10 @@ def main():
     subparsers = parser.add_subparsers(dest="subparser_name", title="subcommands", metavar="{tx, gi, gv}")
 
     # Add subparser for text query
-    parser_tx = subparsers.add_parser("tx", help="Send a text query to GPT-3")
+    parser_tx = subparsers.add_parser("tx", help="Send a text query to GPT-3.5")
     parser_tx.description = "Query GPT with a question or statement and get an answer"
     parser_tx.usage = "usage: tgpt tx prompt [-h] [-n NUM] [-t TEMP] [-m MAX]"
-    parser_tx.add_argument("prompt", type=str, help="Text query to send to GPT-3")
+    parser_tx.add_argument("prompt", type=str, help="Text query to send to GPT-3.5")
     parser_tx.add_argument("-n", "--num", type=int, default=1, help="Number of responses to generate (Default: 1)")
     parser_tx.add_argument("-t", "--temp", type=float, default=temperature, help=f"Sampling temperature for generating responses (Default: {temperature})")
     parser_tx.add_argument("-m", "--max", type=int, default=tokens, help=f"The maximum number of tokens to generate for completions(Default: {tokens})")

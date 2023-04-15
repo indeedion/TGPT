@@ -1,6 +1,6 @@
 # TGPT
 
-TGPT is a Linux command-line tool for interacting with OpenAI's GPT-3.5-turbo model and the DALL-E image generation API. This tool allows users to generate text completions and create images or variations of existing images using text prompts.
+TGPT is a command-line tool for interacting with OpenAI's GPT-3.5-turbo model and generating images using DALL-E. This tool allows users to generate text completions and create images or variations of existing images using text prompts.
 
 ### Table of Contents
 
@@ -35,7 +35,7 @@ pip install tgpt
 ### Usage
 
 #### Text Completions
-To generate text completions, you can run TerminalGPT with your text prompt as an argument:
+To generate text completions, you can run TGPT with your text prompt as an argument:
 
 ```bash
 tgpt "Your text prompt here"
@@ -78,27 +78,28 @@ To enter chat mode, use the --chat flag:
 tgpt --chat
 ```
 
-In chat mode, you can have a conversation with the AI by typing your messages in the terminal. Type /exit or /quit to end the session.
+In chat mode, you can have a conversation with the AI by typing your messages in the terminal. Type /exit or /quit to end the session, /help for more commands.
 
 ##### Customizing Text Completions
 
-You can customize the text completions by setting the --temperature, --number, and --max options:
+You can customize the text completions by setting the -t, -n, and -m options:
 ```bash
-tgpt "Your text prompt here" --temperature 0.5 --number 3 --max 50
+tgpt tx "Your text prompt here" -t 0.5 -n 3 -m 50
 ```
 
---temperature: Controls the randomness of the AI's output (default: 0.7).
---number: The number of completions to generate (default: 1).
---max: The maximum number of tokens to generate for completions (default: 100).
+-t or --temp: Controls the randomness of the AI's output (default: 0.7).
+-n or --num: The number of completions to generate (default: 1).
+-m or --max: The maximum number of tokens to generate for completions (default: 100).
 
 ##### Customizing Image Generation and Variation
 
-You can customize the image generation and variation by setting the --size and --number options:
+You can customize the image generation and variation by setting the -s and -n options:
 ```bash
-tgpt --generate-image "A futuristic city skyline" --size large --number 3
+tgpt gi "A futuristic city skyline" -s large -n 3
 ```
---size: The size of the generated images (options: small, medium, large; default: medium).
---number: The number of images to generate or vary (default: 1).
+-s or --size: The size of the generated images (options: small, medium, large; default: medium).
+-n or --num: The number of images to generate or vary (default: 1).
+
 
 ### Contributors
 
