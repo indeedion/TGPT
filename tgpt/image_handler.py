@@ -39,7 +39,12 @@ class ImageHandler:
             "response_format": response_format,
         }
 
-        response = self._send_request(self.endpoint_generation, data)
+        try:
+            response = self._send_request(self.endpoint_generation, data)
+        except Exception as e:
+            print(f"Error generating image: {e}")
+            return []
+        
         timestamp = datetime.now().strftime("%Y:%m-%d-%H:%M:%S")
         save_paths = []
 

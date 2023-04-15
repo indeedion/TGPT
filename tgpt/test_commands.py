@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 import subprocess
 from config_handler import ConfigHandler
@@ -10,7 +9,7 @@ sleep_time = 6
 
 # Replace these values with your actual API key and valid paths
 API_KEY = config.get_api_key()
-IMAGE_PATH = os.path.abspath("/tmp/gpt-generate-0-2023:04-15-01:22:10.png")
+IMAGE_PATH = os.path.abspath("/tmp/gpt-generate-0-2023:04-15-01:41:27.png")
 SAVE_PATH = os.path.abspath("/tmp/")
 
 def test_command(command):
@@ -21,27 +20,24 @@ def test_command(command):
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}, Output: {e.output}")
 
+def run_and_sleep(command, sleep_time):
+    test_command(command)
+    time.sleep(sleep_time)
+
 def main():
     # Test the text query functionality
-    test_command(["tgpt", "tx", "What is the capital of France?"])
-    time.sleep(sleep_time)  
-    test_command(["tgpt", "tx", "What is the capital of France?", "-n", "2"])
-    time.sleep(sleep_time)
-    test_command(["tgpt", "tx", "What is the capital of France?", "-t", "0.5"])
-    time.sleep(sleep_time)
-    test_command(["tgpt", "tx", "\"What is the capital of France?\"", "-m", "200"])
-    time.sleep(sleep_time)
+    run_and_sleep(["tgpt", "tx", "What is the capital of France?"], sleep_time)
+    run_and_sleep(["tgpt", "tx", "What is the capital of France?", "-n", "2"], sleep_time)
+    run_and_sleep(["tgpt", "tx", "What is the capital of France?", "-t", "0.5"], sleep_time)
+    run_and_sleep(["tgpt", "tx", "\"What is the capital of France?\"", "-m", "200"], sleep_time)
 
     # Test the generate image functionality
-    test_command(["tgpt", "gi", "\"A beautiful sunset over the ocean\""])
-    time.sleep(sleep_time)
-    test_command(["tgpt", "gi", "\"A beautiful sunset over the ocean\"", SAVE_PATH, "-s", "small", "-n", "2"])
-    time.sleep(sleep_time)
+    run_and_sleep(["tgpt", "gi", "\"A beautiful sunset over the ocean\""], sleep_time)
+    run_and_sleep(["tgpt", "gi", "\"A beautiful sunset over the ocean\"", SAVE_PATH, "-s", "small", "-n", "2"], sleep_time)
 
     # Test the generate variation functionality
-    test_command(["tgpt", "gv", IMAGE_PATH])
-    time.sleep(sleep_time)
-    test_command(["tgpt", "gv", IMAGE_PATH, SAVE_PATH, "-s", "large", "-n", "2" ])
+    run_and_sleep(["tgpt", "gv", IMAGE_PATH], sleep_time)
+    run_and_sleep(["tgpt", "gv", IMAGE_PATH, SAVE_PATH, "-s", "large", "-n", "2" ], sleep_time)
 
 
 if __name__ == "__main__":

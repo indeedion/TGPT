@@ -21,8 +21,10 @@ def main():
         image_size = config.get_image_size()
         width = config.get_width()
         number = config.get_number()
+        client = GPTClient(api_key, model)
+        cli = CommandLineInterface(client)
     except Exception as e:
-        print(f"Error loading config values: {e}")
+        print(f"Error loading config values, initializing GPTClient or CommandLineInterface: {e}")
         return
 
     # Create an ArgumentParser object to handle command line arguments
@@ -71,17 +73,11 @@ def main():
     except SystemExit:
         return
     
-    # Create client and command line interface objects
-    try:
-        # Create client and command line interface objects
-        client = GPTClient(api_key, model)
-        client.set_max_tokens(tokens)
-        client.set_temperature(temperature)
-        cli = CommandLineInterface(client)
-        cli.set_width(width)
-    except Exception as e:
-        print(f"Error initializing GPTClient or CommandLineInterface: {e}")
-        return
+    # Set persistent default values to GPTClient and CommandLineInterface
+    client.set_max_tokens(tokens)
+    client.set_temperature(temperature)
+    cli.set_width(width)
+    
     
     # Set values passed from CLI if present
     if hasattr(args, 'max') and args.max != tokens:
