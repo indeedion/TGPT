@@ -9,7 +9,7 @@ sleep_time = 6
 
 # Replace these values with your actual API key and valid paths
 API_KEY = config.get_api_key()
-IMAGE_PATH = os.path.abspath("/tmp/gpt-generate-0-2023:04-15-01:41:27.png")
+IMAGE_PATH = os.path.abspath("/tmp/gpt-generate-0-2023:04-15-02:19:35.png")
 SAVE_PATH = os.path.abspath("/tmp/")
 
 def test_command(command):
