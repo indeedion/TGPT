@@ -11,7 +11,7 @@ setup(
     description="TGPT is a CLI interface to OpenAI's GPT models, bringing GPT to the Linux terminal and console",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/indeedion/TerminalGPT",
+    url="https://github.com/indeedion/TGPT",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
